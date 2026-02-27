@@ -51,6 +51,38 @@ function TypeToggle({ value, onChange }) {
   );
 }
 
+function ItemPicker({ line, items, onTypeChange, onInventoryChange, onCustomNameChange, onAddToInvChange }) {
+  return (
+    <div className="space-y-1.5">
+      <TypeToggle value={line.type} onChange={onTypeChange} />
+      {line.type === 'inventory' ? (
+        <select
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+          value={line.item_id} onChange={onInventoryChange} required
+        >
+          <option value="">Select item...</option>
+          {items.map(it => <option key={it.id} value={it.id}>{it.name}</option>)}
+        </select>
+      ) : (
+        <div className="space-y-1">
+          <input
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            value={line.custom_item_name} onChange={onCustomNameChange}
+            placeholder="Item name..." required
+          />
+          <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+            <input
+              type="checkbox" className="rounded border-gray-300 accent-brand-600"
+              checked={line.add_to_inventory} onChange={onAddToInvChange}
+            />
+            Add to inventory (track stock)
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PurchaseOrders() {
   const [orders, setOrders] = useState([]);
   const [items, setItems] = useState([]);
@@ -211,37 +243,6 @@ export default function PurchaseOrders() {
     if (succeeded.length > 0) load();
   };
 
-  // Item picker used inside both modals
-  const ItemPicker = ({ line, onTypeChange, onInventoryChange, onCustomNameChange, onAddToInvChange, compact = false }) => (
-    <div className="space-y-1.5">
-      <TypeToggle value={line.type} onChange={onTypeChange} />
-      {line.type === 'inventory' ? (
-        <select
-          className={`w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white ${compact ? 'rounded-md' : ''}`}
-          value={line.item_id} onChange={onInventoryChange} required
-        >
-          <option value="">Select item...</option>
-          {items.map(it => <option key={it.id} value={it.id}>{it.name}</option>)}
-        </select>
-      ) : (
-        <div className="space-y-1">
-          <input
-            className={`w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 ${compact ? 'rounded-md' : ''}`}
-            value={line.custom_item_name} onChange={onCustomNameChange}
-            placeholder="Item name..." required
-          />
-          <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
-            <input
-              type="checkbox" className="rounded border-gray-300 accent-brand-600"
-              checked={line.add_to_inventory} onChange={onAddToInvChange}
-            />
-            Add to inventory (track stock)
-          </label>
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-7">
@@ -367,6 +368,7 @@ export default function PurchaseOrders() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Item <span className="text-red-500">*</span></label>
               <ItemPicker
                 line={form}
+                items={items}
                 onTypeChange={v => setForm(f => ({ ...f, type: v, item_id: '', custom_item_name: '' }))}
                 onInventoryChange={e => {
                   const item = items.find(i => i.id === parseInt(e.target.value));
