@@ -47,15 +47,41 @@ In production, Express serves the built client from `client/dist/`. In developme
 
 | Path | Page |
 |---|---|
-| `/dashboard` | Stats overview, low stock alerts, recent charge-outs |
-| `/inventory` | Item CRUD, stock badges (red when `stock <= reorder_threshold`) |
-| `/departments` | Department + GL number CRUD |
-| `/purchase-orders` | Log restocks, view PO history |
+| `/dashboard` | Stats overview, low stock alerts, recent charge-outs, quick New Charge-Out button |
+| `/inventory` | Item CRUD, stock badges (red when `stock <= reorder_threshold`), Restock Items button |
+| `/departments` | Department + GL number CRUD, bulk import (paste `Name, GL Number` per line) |
+| `/purchase-orders` | Log single or bulk restocks, view PO history |
 | `/charge-outs` | Log deployments with month/year filter |
 | `/reports` | Monthly preview + department summary + CSV export |
 
 `client/src/lib/api.js` — all API calls in one file, grouped by resource. Uses `/api` base path (works via Vite proxy in dev, same-origin in prod).
 
+### Key UI patterns
+- **Bulk PO** (`/purchase-orders`) — shared PO header (PO #, date, notes) + dynamic line-item table. Each line auto-fills unit cost from item's latest purchase price. Accessed directly or via the "Restock Items" button on the Inventory page (navigates with `{ state: { openBulk: true } }`).
+- **Quick Charge-Out** (Dashboard) — full charge-out form in a modal without leaving the dashboard. Refreshes dashboard stats on save.
+- **Bulk Department Import** — textarea input, one `Name, GL Number` per line; validates all lines before submitting, reports per-item success/failure.
+
 ### Database location
 SQLite file is created at `data/inventory.db` (relative to repo root). The `data/` directory is gitignored.
+
+## Branding & Theme
+- App name: **GAH IT Inventory** / **GAH IT Department**
+- Primary brand color: `#580259` (deep purple/plum)
+- Custom Tailwind color scale: `brand-50` through `brand-900` defined in `client/tailwind.config.js`
+- All interactive elements (buttons, focus rings, active nav, links) use `brand-*` classes — do NOT use `blue-*`
+
+## Docker
+```bash
+docker compose up -d          # build image and start (http://localhost:3001)
+docker compose up -d --build  # rebuild after code changes
+docker compose down           # stop
+```
+- SQLite database is volume-mounted from `./data` — persists across rebuilds
+- Two-stage Dockerfile: stage 1 builds React client, stage 2 runs Express and serves `client/dist/`
+
+## Git / GitHub
+- Repo: `RADavis03/InventoryApp` (private)
+- Git identity: name `RADavis03`, email `davis.rylan03@gmail.com`
+- Remote: `origin` → GitHub, branch `master`
+- Run `gh auth setup-git` if push fails with credential errors
 
