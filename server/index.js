@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/users', require('./routes/users'));
 app.use('/api/items', require('./routes/items'));
 app.use('/api/departments', require('./routes/departments'));
 app.use('/api/purchase-orders', require('./routes/purchaseOrders'));

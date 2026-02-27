@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const today = () => new Date().toISOString().split('T')[0];
-
-const EMPTY_CO = { item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: '', ticket_number: '', notes: '', charged_at: today() };
 
 function StatCard({ icon: Icon, label, value, color, sub }) {
   const colors = {
@@ -34,13 +33,16 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
 }
 
 export default function Dashboard() {
+  const { currentUser } = useAuth();
+  const emptyCoForm = () => ({ item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: currentUser?.name || '', ticket_number: '', notes: '', charged_at: today() });
+
   const [itemsList, setItemsList] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [recentChargeOuts, setRecentChargeOuts] = useState([]);
   const [monthTotal, setMonthTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showCoModal, setShowCoModal] = useState(false);
-  const [coForm, setCoForm] = useState(EMPTY_CO);
+  const [coForm, setCoForm] = useState(emptyCoForm);
   const [coError, setCoError] = useState('');
   const [coSubmitting, setCoSubmitting] = useState(false);
 
@@ -74,7 +76,7 @@ export default function Dashboard() {
   };
 
   const openCoModal = () => {
-    setCoForm(EMPTY_CO);
+    setCoForm(emptyCoForm());
     setCoError('');
     setShowCoModal(true);
   };

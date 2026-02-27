@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, ArrowRightLeft } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -10,15 +11,16 @@ const today = () => new Date().toISOString().split('T')[0];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
-const EMPTY = { item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: '', ticket_number: '', notes: '', charged_at: today() };
-
 export default function ChargeOuts() {
+  const { currentUser } = useAuth();
+  const emptyForm = () => ({ item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: currentUser?.name || '', ticket_number: '', notes: '', charged_at: today() });
+
   const [chargeOuts, setChargeOuts] = useState([]);
   const [items, setItems] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -42,7 +44,7 @@ export default function ChargeOuts() {
   useEffect(() => { load(); }, [filterMonth, filterYear]);
 
   const openAdd = () => {
-    setForm(EMPTY);
+    setForm(emptyForm());
     setError('');
     setShowModal(true);
   };

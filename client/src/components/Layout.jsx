@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -7,7 +7,10 @@ import {
   ArrowRightLeft,
   FileBarChart2,
   Server,
+  Users,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -16,9 +19,18 @@ const navItems = [
   { to: '/purchase-orders', icon: ShoppingCart, label: 'Purchase Orders' },
   { to: '/charge-outs', icon: ArrowRightLeft, label: 'Charge-Outs' },
   { to: '/reports', icon: FileBarChart2, label: 'Reports' },
+  { to: '/users', icon: Users, label: 'Users' },
 ];
 
 export default function Layout() {
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
@@ -53,7 +65,25 @@ export default function Layout() {
         </nav>
 
         <div className="px-4 py-4 border-t border-slate-700">
-          <p className="text-slate-500 text-xs">GAH IT Department</p>
+          {currentUser ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-slate-300 text-sm font-medium truncate">{currentUser.name}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700 transition-colors flex-shrink-0"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          ) : (
+            <p className="text-slate-500 text-xs">GAH IT Department</p>
+          )}
         </div>
       </aside>
 

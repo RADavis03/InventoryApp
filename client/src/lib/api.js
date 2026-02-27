@@ -15,6 +15,13 @@ async function request(method, path, body) {
   return res.json();
 }
 
+export const users = {
+  list: () => request('GET', '/users'),
+  create: (data) => request('POST', '/users', data),
+  delete: (id) => request('DELETE', `/users/${id}`),
+  verify: (id, pin) => request('POST', '/users/verify', { id, pin }),
+};
+
 export const items = {
   list: () => request('GET', '/items'),
   create: (data) => request('POST', '/items', data),
