@@ -29,7 +29,7 @@ router.delete('/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// Verify PIN — returns user info on success, 401 on wrong PIN
+// Verify PIN for a specific user
 router.post('/verify', (req, res) => {
   const { id, pin } = req.body;
   if (!id || !pin) return res.status(400).json({ error: 'id and pin are required' });
@@ -41,6 +41,20 @@ router.post('/verify', (req, res) => {
   if (!valid) return res.status(401).json({ error: 'Incorrect PIN' });
 
   res.json({ id: user.id, name: user.name });
+});
+
+// Login by PIN only — tries PIN against all users, returns matching user
+router.post('/login', (req, res) => {
+  const { pin } = req.body;
+  if (!pin) return res.status(400).json({ error: 'pin is required' });
+
+  const users = db.prepare('SELECT * FROM users').all();
+  for (const user of users) {
+    if (bcrypt.compareSync(String(pin), user.pin_hash)) {
+      return res.json({ id: user.id, name: user.name });
+    }
+  }
+  res.status(401).json({ error: 'Incorrect PIN' });
 });
 
 module.exports = router;

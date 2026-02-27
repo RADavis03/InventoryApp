@@ -19,7 +19,7 @@ export const users = {
   list: () => request('GET', '/users'),
   create: (data) => request('POST', '/users', data),
   delete: (id) => request('DELETE', `/users/${id}`),
-  verify: (id, pin) => request('POST', '/users/verify', { id, pin }),
+  login: (pin) => request('POST', '/users/login', { pin }),
 };
 
 export const items = {
