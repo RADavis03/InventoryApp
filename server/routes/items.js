@@ -12,6 +12,7 @@ router.get('/', (req, res) => {
       ) AS stock,
       (SELECT unit_cost FROM purchase_orders WHERE item_id = i.id ORDER BY received_at DESC, id DESC LIMIT 1) AS latest_purchase_price
     FROM items i
+    WHERE i.is_custom = 0
     ORDER BY i.name
   `).all();
   res.json(items);

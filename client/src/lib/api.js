@@ -48,6 +48,13 @@ export const chargeOuts = {
   delete: (id) => request('DELETE', `/charge-outs/${id}`),
 };
 
+export const glSwaps = {
+  list:   (params) => request('GET', `/gl-swaps${params ? '?' + new URLSearchParams(params) : ''}`),
+  create: (data)   => request('POST', '/gl-swaps', data),
+  delete: (id)     => request('DELETE', `/gl-swaps/${id}`),
+  csvUrl: (month, year) => `${BASE}/gl-swaps/csv?month=${month}&year=${year}`,
+};
+
 export const reports = {
   monthly: (month, year) => request('GET', `/reports/monthly?month=${month}&year=${year}`),
   csvUrl: (month, year) => `${BASE}/reports/monthly/csv?month=${month}&year=${year}`,

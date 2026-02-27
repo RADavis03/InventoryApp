@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS items (
   description TEXT,
   unit_price REAL NOT NULL DEFAULT 0,
   reorder_threshold INTEGER NOT NULL DEFAULT 0,
+  is_custom INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,4 +44,17 @@ CREATE TABLE IF NOT EXISTS charge_outs (
   notes TEXT,
   charged_at TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS gl_swaps (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  purchase_order_id  INTEGER NOT NULL REFERENCES purchase_orders(id) ON DELETE RESTRICT,
+  item_id            INTEGER NOT NULL REFERENCES items(id) ON DELETE RESTRICT,
+  from_department_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE RESTRICT,
+  to_department_id   INTEGER NOT NULL REFERENCES departments(id) ON DELETE RESTRICT,
+  price              REAL NOT NULL,
+  swapped_by         TEXT NOT NULL,
+  notes              TEXT,
+  swapped_at         TEXT NOT NULL,
+  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP
 );

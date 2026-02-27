@@ -13,6 +13,7 @@ app.use('/api/items', require('./routes/items'));
 app.use('/api/departments', require('./routes/departments'));
 app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
 app.use('/api/charge-outs', require('./routes/chargeOuts'));
+app.use('/api/gl-swaps', require('./routes/glSwaps'));
 app.use('/api/reports', require('./routes/reports'));
 
 if (process.env.NODE_ENV === 'production') {

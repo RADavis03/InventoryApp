@@ -23,9 +23,26 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { item_id, quantity, unit_cost, po_number, notes, received_at } = req.body;
+  let { item_id, custom_item_name, add_to_inventory, quantity, unit_cost, po_number, notes, received_at } = req.body;
+
+  // Resolve custom item name to an item_id
+  if (!item_id && custom_item_name) {
+    const isCustom = add_to_inventory ? 0 : 1;
+    const existing = db.prepare(
+      'SELECT id FROM items WHERE LOWER(name) = LOWER(?) AND is_custom = ?'
+    ).get(custom_item_name.trim(), isCustom);
+    if (existing) {
+      item_id = existing.id;
+    } else {
+      const r = db.prepare(
+        'INSERT INTO items (name, unit_price, reorder_threshold, is_custom) VALUES (?, 0, 0, ?)'
+      ).run(custom_item_name.trim(), isCustom);
+      item_id = r.lastInsertRowid;
+    }
+  }
+
   if (!item_id || !quantity || !unit_cost || !received_at) {
-    return res.status(400).json({ error: 'item_id, quantity, unit_cost, and received_at are required' });
+    return res.status(400).json({ error: 'item_id (or custom_item_name), quantity, unit_cost, and received_at are required' });
   }
 
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(item_id);
