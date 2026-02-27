@@ -34,8 +34,8 @@ export default function Users() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!/^\d{4}$/.test(form.pin)) {
-      setError('PIN must be exactly 4 digits.');
+    if (!/^\d{5}$/.test(form.pin)) {
+      setError('PIN must be exactly 5 digits.');
       return;
     }
     if (form.pin !== form.confirmPin) {
@@ -136,19 +136,19 @@ export default function Users() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">4-Digit PIN <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">5-Digit PIN <span className="text-red-500">*</span></label>
               <input
-                type="password" inputMode="numeric" maxLength={4} pattern="\d{4}"
+                type="password" inputMode="numeric" maxLength={5} pattern="\d{5}"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500"
-                value={form.pin} onChange={set('pin')} placeholder="••••" required
+                value={form.pin} onChange={set('pin')} placeholder="•••••" required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm PIN <span className="text-red-500">*</span></label>
               <input
-                type="password" inputMode="numeric" maxLength={4} pattern="\d{4}"
+                type="password" inputMode="numeric" maxLength={5} pattern="\d{5}"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500"
-                value={form.confirmPin} onChange={set('confirmPin')} placeholder="••••" required
+                value={form.confirmPin} onChange={set('confirmPin')} placeholder="•••••" required
               />
             </div>
 
