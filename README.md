@@ -1,17 +1,19 @@
 # GAH IT Inventory
 
-A self-hosted inventory management system for IT departments. Track consumable stock levels, log purchase orders, record deployments to departments, and generate monthly charge-back reports — all in one place.
+A self-hosted inventory management system for IT departments. Track consumable stock levels, log purchase orders, record deployments to departments, manage printer toner, and generate monthly charge-back reports — all in one place.
 
 ---
 
 ## Features
 
-- **Inventory** — Manage items with reorder thresholds and low-stock alerts
-- **Departments** — Manage departments and GL numbers (bulk import supported)
-- **Purchase Orders** — Log single or bulk restocks; stock auto-updates
-- **Charge-Outs** — Record item deployments to departments with ticket numbers
-- **Reports** — Monthly cost summaries per department with CSV export
 - **Dashboard** — At-a-glance stats, low stock alerts, and quick charge-out entry
+- **Inventory** — Manage items with reorder thresholds and low-stock alerts
+- **Printer Toner** — Track toner cartridges per printer model (B&W and color); log restocks and charge-outs separately from general inventory
+- **Departments** — Manage departments and GL numbers (bulk import supported)
+- **Purchase Orders** — Log single or bulk restocks; supports both inventory items and custom/non-inventory items; collapsible view grouped by PO number
+- **Charge-Outs** — Record item deployments to departments with ticket numbers; separate tab for toner charge-outs
+- **GL Swaps** — Reclassify charges between department GL accounts after the fact (finance reclassification workflow)
+- **Reports** — Monthly cost summaries per department with CSV export; separate GL Swaps report tab
 
 ---
 
@@ -127,7 +129,8 @@ InventoryApp/
 │   ├── db/
 │   │   ├── database.js   # SQLite connection
 │   │   └── schema.sql    # Table definitions
-│   └── routes/           # items, departments, purchaseOrders, chargeOuts, reports
+│   └── routes/           # items, departments, purchaseOrders, chargeOuts,
+│                         # glSwaps, printers, toner, tonerChargeOuts, reports
 ├── data/                 # SQLite database (auto-created, gitignored)
 ├── Dockerfile
 └── docker-compose.yml
@@ -140,4 +143,5 @@ InventoryApp/
 1. **Add departments first** — Charge-outs require a department. Use **Bulk Import** on the Departments page to add multiple at once (`Name, GL Number` per line).
 2. **Add inventory items** — Go to the Inventory page and add your items with reorder thresholds.
 3. **Log your opening stock** — Use **Bulk PO** on the Purchase Orders page (or **Restock Items** from the Inventory page) to enter your starting quantities.
-4. **Start logging charge-outs** — Use the Charge-Outs page or the quick **New Charge-Out** button on the Dashboard.
+4. **Add printers** — Go to the Inventory page → Printer Toner tab to add printer models and their toner cartridges.
+5. **Start logging charge-outs** — Use the Charge-Outs page or the quick **New Charge-Out** button on the Dashboard.
