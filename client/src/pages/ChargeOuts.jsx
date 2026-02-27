@@ -12,15 +12,41 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
 const SLOT_BADGE = {
-  BLACK:   'bg-gray-100 text-gray-800',
-  CYAN:    'bg-cyan-100 text-cyan-800',
-  MAGENTA: 'bg-pink-100 text-pink-800',
-  YELLOW:  'bg-yellow-100 text-yellow-800',
+  BLACK:           'bg-gray-100 text-gray-800',
+  CYAN:            'bg-cyan-100 text-cyan-800',
+  MAGENTA:         'bg-pink-100 text-pink-800',
+  YELLOW:          'bg-yellow-100 text-yellow-800',
+  IMAGING_KIT:     'bg-indigo-100 text-indigo-700',
+  BLACK_DEVELOPER: 'bg-zinc-100 text-zinc-700',
+  COLOR_DEVELOPER: 'bg-violet-100 text-violet-700',
+  COLOR_DRUM:      'bg-teal-100 text-teal-700',
+  BLACK_DRUM:      'bg-stone-100 text-stone-700',
+  WASTE_TONER:     'bg-orange-100 text-orange-700',
 };
 const SLOT_DOT = {
-  BLACK: 'bg-gray-800', CYAN: 'bg-cyan-500', MAGENTA: 'bg-pink-500', YELLOW: 'bg-yellow-400',
+  BLACK:           'bg-gray-800',
+  CYAN:            'bg-cyan-500',
+  MAGENTA:         'bg-pink-500',
+  YELLOW:          'bg-yellow-400',
+  IMAGING_KIT:     'bg-indigo-600',
+  BLACK_DEVELOPER: 'bg-zinc-700',
+  COLOR_DEVELOPER: 'bg-violet-500',
+  COLOR_DRUM:      'bg-teal-500',
+  BLACK_DRUM:      'bg-stone-600',
+  WASTE_TONER:     'bg-orange-500',
 };
-const SLOT_LABEL = { BLACK: 'Black', CYAN: 'Cyan', MAGENTA: 'Magenta', YELLOW: 'Yellow' };
+const SLOT_LABEL = {
+  BLACK:           'Black',
+  CYAN:            'Cyan',
+  MAGENTA:         'Magenta',
+  YELLOW:          'Yellow',
+  IMAGING_KIT:     'Imaging Kit',
+  BLACK_DEVELOPER: 'Black Developer',
+  COLOR_DEVELOPER: 'Color Developer',
+  COLOR_DRUM:      'Color Drum',
+  BLACK_DRUM:      'Black Drum',
+  WASTE_TONER:     'Waste Toner',
+};
 
 export default function ChargeOuts() {
   const { currentUser } = useAuth();

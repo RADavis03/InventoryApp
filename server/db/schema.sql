@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS printers (
 CREATE TABLE IF NOT EXISTS toner_cartridges (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
   printer_id        INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
-  slot              TEXT NOT NULL, -- BLACK | CYAN | MAGENTA | YELLOW
+  slot              TEXT NOT NULL, -- BLACK | CYAN | MAGENTA | YELLOW | IMAGING_KIT | BLACK_DEVELOPER | COLOR_DEVELOPER | COLOR_DRUM | BLACK_DRUM | WASTE_TONER
   part_number       TEXT,
   brand             TEXT,
   notes             TEXT,

@@ -2,15 +2,41 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
-const SLOT_ORDER = "CASE tc.slot WHEN 'BLACK' THEN 1 WHEN 'CYAN' THEN 2 WHEN 'MAGENTA' THEN 3 WHEN 'YELLOW' THEN 4 ELSE 5 END";
+const BW_SLOTS    = ['BLACK', 'IMAGING_KIT'];
+const COLOR_SLOTS = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK_DEVELOPER', 'COLOR_DEVELOPER', 'COLOR_DRUM', 'BLACK_DRUM', 'WASTE_TONER'];
 
+const SLOT_ORDER = `CASE tc.slot
+  WHEN 'BLACK'           THEN 1
+  WHEN 'CYAN'            THEN 2
+  WHEN 'MAGENTA'         THEN 3
+  WHEN 'YELLOW'          THEN 4
+  WHEN 'BLACK_DEVELOPER' THEN 5
+  WHEN 'COLOR_DEVELOPER' THEN 6
+  WHEN 'BLACK_DRUM'      THEN 7
+  WHEN 'COLOR_DRUM'      THEN 8
+  WHEN 'IMAGING_KIT'     THEN 9
+  WHEN 'WASTE_TONER'     THEN 10
+  ELSE 11 END`;
+
+// Stock is shared across all cartridges with the same part_number.
+// If part_number is null/empty, stock is calculated per individual cartridge.
 const withStock = (where = '', params = []) => db.prepare(`
   SELECT
     tc.*,
     p.model_name AS printer_model,
     p.is_color   AS printer_is_color,
-    COALESCE((SELECT SUM(quantity) FROM toner_restocks    WHERE toner_id = tc.id), 0) -
-    COALESCE((SELECT SUM(quantity) FROM toner_charge_outs WHERE toner_id = tc.id), 0) AS stock
+    CASE
+      WHEN tc.part_number IS NOT NULL AND tc.part_number != '' THEN
+        COALESCE((SELECT SUM(tr.quantity) FROM toner_restocks tr
+                  JOIN toner_cartridges tc2 ON tc2.id = tr.toner_id
+                  WHERE tc2.part_number = tc.part_number), 0) -
+        COALESCE((SELECT SUM(tco.quantity) FROM toner_charge_outs tco
+                  JOIN toner_cartridges tc2 ON tc2.id = tco.toner_id
+                  WHERE tc2.part_number = tc.part_number), 0)
+      ELSE
+        COALESCE((SELECT SUM(quantity) FROM toner_restocks    WHERE toner_id = tc.id), 0) -
+        COALESCE((SELECT SUM(quantity) FROM toner_charge_outs WHERE toner_id = tc.id), 0)
+    END AS stock
   FROM toner_cartridges tc
   JOIN printers p ON p.id = tc.printer_id
   ${where}
@@ -35,7 +61,7 @@ router.post('/', (req, res) => {
   const printer = db.prepare('SELECT * FROM printers WHERE id = ?').get(printer_id);
   if (!printer) return res.status(404).json({ error: 'Printer not found' });
 
-  const VALID_SLOTS = printer.is_color ? ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW'] : ['BLACK'];
+  const VALID_SLOTS = printer.is_color ? COLOR_SLOTS : BW_SLOTS;
   if (!VALID_SLOTS.includes(slot)) {
     return res.status(400).json({ error: `Invalid slot for this printer type. Valid: ${VALID_SLOTS.join(', ')}` });
   }

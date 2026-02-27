@@ -9,14 +9,20 @@ const today = () => new Date().toISOString().split('T')[0];
 
 const ITEM_EMPTY = { name: '', description: '', unit_price: '', reorder_threshold: '' };
 
-const SLOTS_COLOR = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW'];
-const SLOTS_BW    = ['BLACK'];
+const SLOTS_COLOR = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK_DEVELOPER', 'COLOR_DEVELOPER', 'COLOR_DRUM', 'BLACK_DRUM', 'WASTE_TONER'];
+const SLOTS_BW    = ['BLACK', 'IMAGING_KIT'];
 
 const SLOT_STYLE = {
-  BLACK:   { dot: 'bg-gray-800',   badge: 'bg-gray-100 text-gray-800',   label: 'Black'   },
-  CYAN:    { dot: 'bg-cyan-500',   badge: 'bg-cyan-100 text-cyan-800',   label: 'Cyan'    },
-  MAGENTA: { dot: 'bg-pink-500',   badge: 'bg-pink-100 text-pink-800',   label: 'Magenta' },
-  YELLOW:  { dot: 'bg-yellow-400', badge: 'bg-yellow-100 text-yellow-800', label: 'Yellow'  },
+  BLACK:           { dot: 'bg-gray-800',    badge: 'bg-gray-100 text-gray-800',      label: 'Black'           },
+  CYAN:            { dot: 'bg-cyan-500',    badge: 'bg-cyan-100 text-cyan-800',      label: 'Cyan'            },
+  MAGENTA:         { dot: 'bg-pink-500',    badge: 'bg-pink-100 text-pink-800',      label: 'Magenta'         },
+  YELLOW:          { dot: 'bg-yellow-400',  badge: 'bg-yellow-100 text-yellow-800',  label: 'Yellow'          },
+  IMAGING_KIT:     { dot: 'bg-indigo-600',  badge: 'bg-indigo-100 text-indigo-700',  label: 'Imaging Kit'     },
+  BLACK_DEVELOPER: { dot: 'bg-zinc-700',    badge: 'bg-zinc-100 text-zinc-700',      label: 'Black Developer' },
+  COLOR_DEVELOPER: { dot: 'bg-violet-500',  badge: 'bg-violet-100 text-violet-700',  label: 'Color Developer' },
+  COLOR_DRUM:      { dot: 'bg-teal-500',    badge: 'bg-teal-100 text-teal-700',      label: 'Color Drum'      },
+  BLACK_DRUM:      { dot: 'bg-stone-600',   badge: 'bg-stone-100 text-stone-700',    label: 'Black Drum'      },
+  WASTE_TONER:     { dot: 'bg-orange-500',  badge: 'bg-orange-100 text-orange-700',  label: 'Waste Toner'     },
 };
 
 const PRINTER_EMPTY  = { model_name: '', is_color: false, notes: '' };
@@ -179,6 +185,11 @@ export default function Inventory() {
   };
 
   const setRestock = (k) => (e) => setRestockForm(f => ({ ...f, [k]: e.target.value }));
+
+  // Shared part number detection — cartridges with the same part# share stock
+  const partNumberCounts = {};
+  tonerItems.forEach(t => { if (t.part_number) partNumberCounts[t.part_number] = (partNumberCounts[t.part_number] || 0) + 1; });
+  const isShared = (pn) => pn && partNumberCounts[pn] > 1;
 
   // Available slots for add-toner modal
   const addTonerPrinter = printers.find(p => p.id === parseInt(tonerForm.printer_id));
@@ -351,7 +362,7 @@ export default function Inventory() {
                       <tbody className="divide-y divide-gray-50">
                         {cartridges.map(t => {
                           const style = SLOT_STYLE[t.slot] || SLOT_STYLE.BLACK;
-                          const low = t.stock <= t.reorder_threshold;
+                          const low = t.stock < t.reorder_threshold;
                           return (
                             <tr key={t.id} className={`hover:bg-gray-50/50 ${low ? 'bg-red-50/30' : ''}`}>
                               <td className="px-5 py-3">
@@ -363,7 +374,14 @@ export default function Inventory() {
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-5 py-3 font-mono text-xs text-gray-600">{t.part_number || <span className="text-gray-300">—</span>}</td>
+                              <td className="px-5 py-3 font-mono text-xs text-gray-600">
+                                <div className="flex items-center gap-1.5">
+                                  {t.part_number || <span className="text-gray-300">—</span>}
+                                  {isShared(t.part_number) && (
+                                    <span className="text-xs bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded font-medium">Shared</span>
+                                  )}
+                                </div>
+                              </td>
                               <td className="px-5 py-3 text-gray-600">{t.brand || <span className="text-gray-300">—</span>}</td>
                               <td className="px-5 py-3 text-center">
                                 <span className={`inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-semibold ${low ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -572,6 +590,11 @@ export default function Inventory() {
             {restockTarget.part_number && <span className="text-xs font-mono text-gray-400">{restockTarget.part_number}</span>}
             <span className="ml-auto text-xs text-gray-500">Current stock: <strong className="text-gray-800">{restockTarget.stock}</strong></span>
           </div>
+          {isShared(restockTarget.part_number) && (
+            <p className="text-xs text-brand-700 bg-brand-50 px-3 py-2 rounded-lg mb-1">
+              Stock for part # <strong>{restockTarget.part_number}</strong> is shared across multiple printers. This restock will update the shared total.
+            </p>
+          )}
           <form onSubmit={handleRestockSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
