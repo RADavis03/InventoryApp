@@ -116,7 +116,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-7">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">IT Inventory overview</p>
+          <p className="text-gray-500 mt-1">GAH IT Inventory overview</p>
         </div>
         <button
           onClick={openCoModal}

@@ -28,7 +28,7 @@ export default function Layout() {
             <Server className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white font-semibold text-sm leading-tight">IT Inventory</p>
+            <p className="text-white font-semibold text-sm leading-tight">GAH IT Inventory</p>
             <p className="text-slate-400 text-xs">Management System</p>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function Layout() {
         </nav>
 
         <div className="px-4 py-4 border-t border-slate-700">
-          <p className="text-slate-500 text-xs">IT Department</p>
+          <p className="text-slate-500 text-xs">GAH IT Department</p>
         </div>
       </aside>
 
