@@ -62,7 +62,7 @@ export default function Reports() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
             <select
               value={month} onChange={e => { setMonth(Number(e.target.value)); setRows(null); }}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
@@ -71,7 +71,7 @@ export default function Reports() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Year</label>
             <select
               value={year} onChange={e => { setYear(Number(e.target.value)); setRows(null); }}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -79,7 +79,7 @@ export default function Reports() {
           <button
             onClick={handlePreview}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-60 rounded-lg transition-colors"
           >
             <Search size={15} />
             {loading ? 'Loading...' : 'Preview Report'}
@@ -197,7 +197,7 @@ export default function Reports() {
                       <td className="px-5 py-3 text-gray-600">{row.charged_by}</td>
                       <td className="px-5 py-3">
                         {row.ticket_number
-                          ? <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{row.ticket_number}</span>
+                          ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{row.ticket_number}</span>
                           : <span className="text-gray-400">—</span>}
                       </td>
                     </tr>

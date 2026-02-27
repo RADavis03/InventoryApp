@@ -158,7 +158,7 @@ export default function PurchaseOrders() {
           </button>
           <button
             onClick={openAdd}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Log Purchase
           </button>
@@ -223,7 +223,7 @@ export default function PurchaseOrders() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Item <span className="text-red-500">*</span></label>
               <select
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white"
                 value={form.item_id} onChange={set('item_id')} required
               >
                 <option value="">Select an item...</option>
@@ -236,14 +236,14 @@ export default function PurchaseOrders() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Date Received <span className="text-red-500">*</span></label>
                 <input
                   type="date"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.received_at} onChange={set('received_at')} required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">PO Number</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.po_number} onChange={set('po_number')} placeholder="Optional"
                 />
               </div>
@@ -254,7 +254,7 @@ export default function PurchaseOrders() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Quantity <span className="text-red-500">*</span></label>
                 <input
                   type="number" min="1" step="1"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.quantity} onChange={set('quantity')} placeholder="0" required
                 />
               </div>
@@ -262,7 +262,7 @@ export default function PurchaseOrders() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit Cost ($) <span className="text-red-500">*</span></label>
                 <input
                   type="number" min="0" step="0.01"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.unit_cost} onChange={set('unit_cost')} placeholder="0.00" required
                 />
               </div>
@@ -272,14 +272,14 @@ export default function PurchaseOrders() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
               <textarea
                 rows={2}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
                 value={form.notes} onChange={set('notes')} placeholder="Optional notes..."
               />
             </div>
 
             {form.quantity && form.unit_cost && (
-              <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm">
-                <span className="text-blue-700 font-medium">Total: {fmt(form.quantity * form.unit_cost)}</span>
+              <div className="bg-brand-50 rounded-lg px-4 py-3 text-sm">
+                <span className="text-brand-700 font-medium">Total: {fmt(form.quantity * form.unit_cost)}</span>
               </div>
             )}
 
@@ -291,7 +291,7 @@ export default function PurchaseOrders() {
                 Cancel
               </button>
               <button type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                 Log Purchase
               </button>
             </div>
@@ -308,7 +308,7 @@ export default function PurchaseOrders() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">PO Number</label>
                   <input
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                     value={bulkHeader.po_number} onChange={setHeader('po_number')} placeholder="e.g. PO-2024-001"
                   />
                 </div>
@@ -316,7 +316,7 @@ export default function PurchaseOrders() {
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Date Received <span className="text-red-500">*</span></label>
                   <input
                     type="date"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     value={bulkHeader.received_at} onChange={setHeader('received_at')} required
                   />
                 </div>
@@ -324,7 +324,7 @@ export default function PurchaseOrders() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={bulkHeader.notes} onChange={setHeader('notes')} placeholder="Optional notes for all line items"
                 />
               </div>
@@ -334,7 +334,7 @@ export default function PurchaseOrders() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-700">Line Items</label>
                   <button type="button" onClick={addLine}
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium">
+                    className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-medium">
                     <Plus size={13} /> Add Item
                   </button>
                 </div>
@@ -356,7 +356,7 @@ export default function PurchaseOrders() {
                           <tr key={i}>
                             <td className="px-2 py-1.5">
                               <select
-                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                                 value={line.item_id} onChange={setLine(i, 'item_id')} required
                               >
                                 <option value="">Select item...</option>
@@ -366,14 +366,14 @@ export default function PurchaseOrders() {
                             <td className="px-2 py-1.5">
                               <input
                                 type="number" min="1" step="1"
-                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                                 value={line.quantity} onChange={setLine(i, 'quantity')} placeholder="0" required
                               />
                             </td>
                             <td className="px-2 py-1.5">
                               <input
                                 type="number" min="0" step="0.01"
-                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                                 value={line.unit_cost} onChange={setLine(i, 'unit_cost')} placeholder="0.00" required
                               />
                             </td>
@@ -397,9 +397,9 @@ export default function PurchaseOrders() {
               </div>
 
               {bulkGrandTotal > 0 && (
-                <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm flex justify-between">
-                  <span className="text-blue-700">{bulkLines.filter(l => l.item_id && l.quantity && l.unit_cost).length} line item(s)</span>
-                  <span className="text-blue-700 font-semibold">Grand Total: {fmt(bulkGrandTotal)}</span>
+                <div className="bg-brand-50 rounded-lg px-4 py-3 text-sm flex justify-between">
+                  <span className="text-brand-700">{bulkLines.filter(l => l.item_id && l.quantity && l.unit_cost).length} line item(s)</span>
+                  <span className="text-brand-700 font-semibold">Grand Total: {fmt(bulkGrandTotal)}</span>
                 </div>
               )}
 
@@ -411,7 +411,7 @@ export default function PurchaseOrders() {
                   Cancel
                 </button>
                 <button type="submit" disabled={bulkSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   {bulkSubmitting ? 'Saving…' : 'Submit PO'}
                 </button>
               </div>
@@ -436,7 +436,7 @@ export default function PurchaseOrders() {
               )}
               <div className="flex justify-end">
                 <button onClick={closeBulk}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                   Done
                 </button>
               </div>

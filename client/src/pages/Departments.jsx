@@ -135,7 +135,7 @@ export default function Departments() {
           </button>
           <button
             onClick={openAdd}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Add Department
           </button>
@@ -173,7 +173,7 @@ export default function Departments() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => openEdit(dept)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                       >
                         <Pencil size={15} />
                       </button>
@@ -198,14 +198,14 @@ export default function Departments() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Department Name <span className="text-red-500">*</span></label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 value={form.name} onChange={set('name')} placeholder="e.g. Human Resources" required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">GL Number <span className="text-red-500">*</span></label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 value={form.gl_number} onChange={set('gl_number')} placeholder="e.g. 5100-200" required
               />
             </div>
@@ -218,7 +218,7 @@ export default function Departments() {
                 Cancel
               </button>
               <button type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                 {editDept ? 'Save Changes' : 'Add Department'}
               </button>
             </div>
@@ -234,7 +234,7 @@ export default function Departments() {
                 Enter one department per line as <span className="font-mono bg-gray-100 px-1 rounded">Name, GL Number</span>
               </p>
               <textarea
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
                 rows={10}
                 placeholder={"Human Resources, 5100-200\nIT Department, 5200-100\nFinance, 5300-400"}
                 value={bulkText}
@@ -248,7 +248,7 @@ export default function Departments() {
                 <button
                   onClick={handleBulkImport}
                   disabled={!bulkText.trim() || bulkLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {bulkLoading ? 'Importing…' : 'Import'}
                 </button>
@@ -291,7 +291,7 @@ export default function Departments() {
               )}
               <div className="flex justify-end">
                 <button onClick={closeBulk}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                   Done
                 </button>
               </div>

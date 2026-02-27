@@ -24,7 +24,7 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className="w-60 flex-shrink-0 bg-slate-900 flex flex-col">
         <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-700">
-          <div className="bg-blue-600 rounded-lg p-1.5">
+          <div className="bg-brand-600 rounded-lg p-1.5">
             <Server className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -41,7 +41,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`
               }

@@ -12,7 +12,7 @@ const EMPTY_CO = { item_id: '', department_id: '', quantity: '', unit_cost: '', 
 
 function StatCard({ icon: Icon, label, value, color, sub }) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
+    blue: 'bg-brand-50 text-brand-600',
     red: 'bg-red-50 text-red-600',
     green: 'bg-green-50 text-green-600',
     purple: 'bg-purple-50 text-purple-600',
@@ -120,7 +120,7 @@ export default function Dashboard() {
         </div>
         <button
           onClick={openCoModal}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} /> New Charge-Out
         </button>
@@ -139,7 +139,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">Low Stock Alerts</h2>
-            <Link to="/inventory" className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-0.5">
+            <Link to="/inventory" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5">
               View all <ChevronRight size={13} />
             </Link>
           </div>
@@ -166,7 +166,7 @@ export default function Dashboard() {
         <div className="col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">Recent Charge-Outs</h2>
-            <Link to="/charge-outs" className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-0.5">
+            <Link to="/charge-outs" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5">
               View all <ChevronRight size={13} />
             </Link>
           </div>
@@ -206,7 +206,7 @@ export default function Dashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Item <span className="text-red-500">*</span></label>
                 <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                   value={coForm.item_id} onChange={handleCoItemChange} required
                 >
                   <option value="">Select an item...</option>
@@ -226,7 +226,7 @@ export default function Dashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
                 <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                   value={coForm.department_id} onChange={setco('department_id')} required
                 >
                   <option value="">Select a department...</option>
@@ -241,7 +241,7 @@ export default function Dashboard() {
                 <input
                   type="number" min="1" step="1"
                   max={selectedCoItem?.stock || undefined}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.quantity} onChange={setco('quantity')} placeholder="0" required
                 />
               </div>
@@ -254,7 +254,7 @@ export default function Dashboard() {
                 </label>
                 <input
                   type="number" min="0" step="0.01"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.unit_cost} onChange={setco('unit_cost')} placeholder="0.00" required
                 />
               </div>
@@ -264,14 +264,14 @@ export default function Dashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By <span className="text-red-500">*</span></label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.charged_by} onChange={setco('charged_by')} placeholder="Your name" required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket #</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.ticket_number} onChange={setco('ticket_number')} placeholder="e.g. INC-12345"
                 />
               </div>
@@ -282,22 +282,22 @@ export default function Dashboard() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
                 <input
                   type="date"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.charged_at} onChange={setco('charged_at')} required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={coForm.notes} onChange={setco('notes')} placeholder="Optional"
                 />
               </div>
             </div>
 
             {coForm.quantity && coForm.unit_cost && (
-              <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm">
-                <span className="text-blue-700 font-medium">Total charge: {fmt(coForm.quantity * coForm.unit_cost)}</span>
+              <div className="bg-brand-50 rounded-lg px-4 py-3 text-sm">
+                <span className="text-brand-700 font-medium">Total charge: {fmt(coForm.quantity * coForm.unit_cost)}</span>
               </div>
             )}
 
@@ -309,7 +309,7 @@ export default function Dashboard() {
                 Cancel
               </button>
               <button type="submit" disabled={coSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {coSubmitting ? 'Saving…' : 'Record Charge-Out'}
               </button>
             </div>

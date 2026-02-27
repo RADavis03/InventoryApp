@@ -79,7 +79,7 @@ export default function Inventory() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} /> Add Item
         </button>
@@ -131,7 +131,7 @@ export default function Inventory() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEdit(item)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                         >
                           <Pencil size={15} />
                         </button>
@@ -158,14 +158,14 @@ export default function Inventory() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Name <span className="text-red-500">*</span></label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 value={form.name} onChange={set('name')} placeholder="e.g. HDMI Cable" required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
               <input
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 value={form.description} onChange={set('description')} placeholder="Optional details"
               />
             </div>
@@ -174,7 +174,7 @@ export default function Inventory() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit Price ($)</label>
                 <input
                   type="number" min="0" step="0.01"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.unit_price} onChange={set('unit_price')} placeholder="0.00"
                 />
               </div>
@@ -182,7 +182,7 @@ export default function Inventory() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Reorder Threshold</label>
                 <input
                   type="number" min="0" step="1"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   value={form.reorder_threshold} onChange={set('reorder_threshold')} placeholder="5"
                 />
               </div>
@@ -196,7 +196,7 @@ export default function Inventory() {
                 Cancel
               </button>
               <button type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                 {editItem ? 'Save Changes' : 'Add Item'}
               </button>
             </div>

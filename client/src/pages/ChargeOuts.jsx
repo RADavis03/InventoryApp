@@ -102,7 +102,7 @@ export default function ChargeOuts() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} /> New Charge-Out
         </button>
@@ -114,14 +114,14 @@ export default function ChargeOuts() {
           <select
             value={filterMonth}
             onChange={e => setFilterMonth(Number(e.target.value))}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
           <select
             value={filterYear}
             onChange={e => setFilterYear(Number(e.target.value))}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -173,7 +173,7 @@ export default function ChargeOuts() {
                     <td className="px-5 py-3.5 text-gray-600">{co.charged_by}</td>
                     <td className="px-5 py-3.5">
                       {co.ticket_number
-                        ? <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{co.ticket_number}</span>
+                        ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{co.ticket_number}</span>
                         : <span className="text-gray-400">—</span>}
                     </td>
                     <td className="px-5 py-3.5 text-right">
@@ -200,7 +200,7 @@ export default function ChargeOuts() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Item <span className="text-red-500">*</span></label>
                 <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                   value={form.item_id} onChange={handleItemChange} required
                 >
                   <option value="">Select an item...</option>
@@ -220,7 +220,7 @@ export default function ChargeOuts() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
                 <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                   value={form.department_id} onChange={set('department_id')} required
                 >
                   <option value="">Select a department...</option>
@@ -235,7 +235,7 @@ export default function ChargeOuts() {
                 <input
                   type="number" min="1" step="1"
                   max={selectedItem?.stock || undefined}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.quantity} onChange={set('quantity')} placeholder="0" required
                 />
               </div>
@@ -248,7 +248,7 @@ export default function ChargeOuts() {
                 </label>
                 <input
                   type="number" min="0" step="0.01"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.unit_cost} onChange={set('unit_cost')} placeholder="0.00" required
                 />
               </div>
@@ -258,14 +258,14 @@ export default function ChargeOuts() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By <span className="text-red-500">*</span></label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.charged_by} onChange={set('charged_by')} placeholder="Your name" required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket #</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.ticket_number} onChange={set('ticket_number')} placeholder="e.g. INC-12345"
                 />
               </div>
@@ -276,22 +276,22 @@ export default function ChargeOuts() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
                 <input
                   type="date"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.charged_at} onChange={set('charged_at')} required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={form.notes} onChange={set('notes')} placeholder="Optional"
                 />
               </div>
             </div>
 
             {form.quantity && form.unit_cost && (
-              <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm">
-                <span className="text-blue-700 font-medium">Total charge: {fmt(form.quantity * form.unit_cost)}</span>
+              <div className="bg-brand-50 rounded-lg px-4 py-3 text-sm">
+                <span className="text-brand-700 font-medium">Total charge: {fmt(form.quantity * form.unit_cost)}</span>
               </div>
             )}
 
@@ -303,7 +303,7 @@ export default function ChargeOuts() {
                 Cancel
               </button>
               <button type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
                 Record Charge-Out
               </button>
             </div>
