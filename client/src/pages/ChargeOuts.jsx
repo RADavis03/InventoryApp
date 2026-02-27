@@ -258,17 +258,17 @@ export default function ChargeOuts() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={form.charged_by} onChange={set('charged_by')} placeholder="Your name" required
+                  className="w-full border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                  value={form.charged_by} readOnly
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket #</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
                 <input
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={form.ticket_number} onChange={set('ticket_number')} placeholder="e.g. INC-12345"
+                  value={form.ticket_number} onChange={set('ticket_number')} placeholder="e.g. INC-12345" required
                 />
               </div>
             </div>
