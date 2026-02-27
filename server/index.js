@@ -14,6 +14,9 @@ app.use('/api/departments', require('./routes/departments'));
 app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
 app.use('/api/charge-outs', require('./routes/chargeOuts'));
 app.use('/api/gl-swaps', require('./routes/glSwaps'));
+app.use('/api/printers', require('./routes/printers'));
+app.use('/api/toner', require('./routes/toner'));
+app.use('/api/toner-charge-outs', require('./routes/tonerChargeOuts'));
 app.use('/api/reports', require('./routes/reports'));
 
 if (process.env.NODE_ENV === 'production') {

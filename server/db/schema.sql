@@ -46,6 +46,46 @@ CREATE TABLE IF NOT EXISTS charge_outs (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS printers (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  model_name TEXT NOT NULL,
+  is_color   INTEGER NOT NULL DEFAULT 0,
+  notes      TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS toner_cartridges (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  printer_id        INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
+  slot              TEXT NOT NULL, -- BLACK | CYAN | MAGENTA | YELLOW
+  part_number       TEXT,
+  brand             TEXT,
+  notes             TEXT,
+  reorder_threshold INTEGER NOT NULL DEFAULT 0,
+  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS toner_restocks (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  toner_id    INTEGER NOT NULL REFERENCES toner_cartridges(id) ON DELETE CASCADE,
+  quantity    INTEGER NOT NULL,
+  notes       TEXT,
+  received_at TEXT NOT NULL,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS toner_charge_outs (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  toner_id      INTEGER NOT NULL REFERENCES toner_cartridges(id) ON DELETE CASCADE,
+  department_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+  quantity      INTEGER NOT NULL,
+  charged_by    TEXT NOT NULL,
+  ticket_number TEXT,
+  notes         TEXT,
+  charged_at    TEXT NOT NULL,
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS gl_swaps (
   id                 INTEGER PRIMARY KEY AUTOINCREMENT,
   purchase_order_id  INTEGER NOT NULL REFERENCES purchase_orders(id) ON DELETE RESTRICT,

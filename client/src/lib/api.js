@@ -48,6 +48,27 @@ export const chargeOuts = {
   delete: (id) => request('DELETE', `/charge-outs/${id}`),
 };
 
+export const printers = {
+  list:   ()         => request('GET',    '/printers'),
+  create: (data)     => request('POST',   '/printers', data),
+  update: (id, data) => request('PUT',    `/printers/${id}`, data),
+  delete: (id)       => request('DELETE', `/printers/${id}`),
+};
+
+export const toner = {
+  list:    (params)  => request('GET',    `/toner${params ? '?' + new URLSearchParams(params) : ''}`),
+  create:  (data)    => request('POST',   '/toner', data),
+  update:  (id, data)=> request('PUT',    `/toner/${id}`, data),
+  delete:  (id)      => request('DELETE', `/toner/${id}`),
+  restock: (id, data)=> request('POST',   `/toner/${id}/restock`, data),
+};
+
+export const tonerChargeOuts = {
+  list:   (params) => request('GET',    `/toner-charge-outs${params ? '?' + new URLSearchParams(params) : ''}`),
+  create: (data)   => request('POST',   '/toner-charge-outs', data),
+  delete: (id)     => request('DELETE', `/toner-charge-outs/${id}`),
+};
+
 export const glSwaps = {
   list:   (params) => request('GET', `/gl-swaps${params ? '?' + new URLSearchParams(params) : ''}`),
   create: (data)   => request('POST', '/gl-swaps', data),
