@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const { name, pin } = req.body;
   if (!name || !pin) return res.status(400).json({ error: 'name and pin are required' });
-  if (!/^\d{4}$/.test(pin)) return res.status(400).json({ error: 'PIN must be exactly 4 digits' });
+  if (!/^\d{5}$/.test(pin)) return res.status(400).json({ error: 'PIN must be exactly 5 digits' });
 
   const pin_hash = bcrypt.hashSync(pin, 10);
   const result = db.prepare('INSERT INTO users (name, pin_hash) VALUES (?, ?)').run(name.trim(), pin_hash);

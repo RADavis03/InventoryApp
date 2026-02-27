@@ -11,9 +11,9 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Auto-submit when 4 digits entered
+  // Auto-submit when 5 digits entered
   useEffect(() => {
-    if (pin.length === 4) handleSubmit(pin);
+    if (pin.length === 5) handleSubmit(pin);
   }, [pin]);
 
   // Keyboard support
@@ -28,7 +28,7 @@ export default function Login() {
 
   const addDigit = (d) => {
     setError('');
-    setPin(p => p.length < 4 ? p + d : p);
+    setPin(p => p.length < 5 ? p + d : p);
   };
 
   const removeDigit = () => {
@@ -69,7 +69,7 @@ export default function Login() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm w-full max-w-xs p-8">
         {/* PIN dots */}
         <div className="flex justify-center gap-4 mb-6">
-          {[0,1,2,3].map(i => (
+          {[0,1,2,3,4].map(i => (
             <div key={i} className={`w-4 h-4 rounded-full border-2 transition-colors ${
               pin.length > i ? 'bg-brand-600 border-brand-600' : 'border-gray-300'
             }`} />
