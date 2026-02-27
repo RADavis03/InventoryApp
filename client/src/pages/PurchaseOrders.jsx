@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Trash2, ShoppingCart, ClipboardList, X } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
@@ -27,6 +28,8 @@ export default function PurchaseOrders() {
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
 
+  const location = useLocation();
+
   const load = () => {
     setLoading(true);
     Promise.all([api.purchaseOrders.list(), api.items.list()])
@@ -35,6 +38,14 @@ export default function PurchaseOrders() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (location.state?.openBulk) {
+      openBulk();
+      // Clear the state so refreshing doesn't re-open it
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   const openAdd = () => {
     setForm(EMPTY);

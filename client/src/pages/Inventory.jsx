@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, AlertTriangle, Package } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 
@@ -70,6 +71,9 @@ export default function Inventory() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const navigate = useNavigate();
+  const openRestock = () => navigate('/purchase-orders', { state: { openBulk: true } });
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-7">
@@ -77,12 +81,20 @@ export default function Inventory() {
           <h1 className="text-2xl font-bold text-gray-900">Inventory</h1>
           <p className="text-gray-500 mt-1">Manage consumable items and stock levels</p>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus size={16} /> Add Item
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={openRestock}
+            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            <ShoppingCart size={16} /> Restock Items
+          </button>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={16} /> Add Item
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
