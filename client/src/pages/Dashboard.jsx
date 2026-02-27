@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [itemsList, setItemsList] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [recentChargeOuts, setRecentChargeOuts] = useState([]);
+  const [monthCoCount, setMonthCoCount] = useState(0);
   const [monthTotal, setMonthTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showCoModal, setShowCoModal] = useState(false);
@@ -58,6 +59,7 @@ export default function Dashboard() {
       setDepartments(depts);
       const sorted = [...cos].sort((a, b) => b.id - a.id).slice(0, 10);
       setRecentChargeOuts(sorted);
+      setMonthCoCount(cos.length);
       setMonthTotal(cos.reduce((sum, c) => sum + c.quantity * c.unit_cost, 0));
     }).finally(() => setLoading(false));
   };
@@ -132,7 +134,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-4 gap-5 mb-8">
         <StatCard icon={Package} label="Total Items" value={itemsList.length} color="blue" sub="in catalog" />
         <StatCard icon={AlertTriangle} label="Low Stock" value={lowStockItems.length} color="red" sub="at or below threshold" />
-        <StatCard icon={ArrowRightLeft} label={`${monthName} Transactions`} value={recentChargeOuts.length <= 10 && recentChargeOuts.length > 0 ? 'View all →' : recentChargeOuts.length} color="purple" sub="charge-outs this month" />
+        <Link to="/charge-outs" className="block hover:opacity-80 transition-opacity">
+          <StatCard icon={ArrowRightLeft} label={`${monthName} Transactions`} value={monthCoCount} color="purple" sub="charge-outs this month" />
+        </Link>
         <StatCard icon={DollarSign} label={`${monthName} Total`} value={fmt(monthTotal)} color="green" sub="charged out this month" />
       </div>
 
