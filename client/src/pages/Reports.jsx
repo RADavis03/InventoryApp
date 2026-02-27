@@ -12,17 +12,27 @@ export default function Reports() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-  const [rows, setRows] = useState(null);
+  const [reportType, setReportType] = useState('chargeOuts'); // 'chargeOuts' | 'glSwaps'
+
+  const [rows, setRows] = useState(null);         // charge-out rows
+  const [swapRows, setSwapRows] = useState(null); // gl swap rows
   const [loading, setLoading] = useState(false);
 
   const yearOptions = [];
   for (let y = now.getFullYear(); y >= now.getFullYear() - 3; y--) yearOptions.push(y);
 
+  const clearResults = () => { setRows(null); setSwapRows(null); };
+
   const handlePreview = async () => {
     setLoading(true);
     try {
-      const data = await api.reports.monthly(month, year);
-      setRows(data);
+      if (reportType === 'chargeOuts') {
+        const data = await api.reports.monthly(month, year);
+        setRows(data);
+      } else {
+        const data = await api.glSwaps.list({ month, year });
+        setSwapRows(data);
+      }
     } catch (err) {
       alert(err.message);
     } finally {
@@ -31,10 +41,13 @@ export default function Reports() {
   };
 
   const handleExport = () => {
-    window.open(api.reports.csvUrl(month, year), '_blank');
+    const url = reportType === 'chargeOuts'
+      ? api.reports.csvUrl(month, year)
+      : api.glSwaps.csvUrl(month, year);
+    window.open(url, '_blank');
   };
 
-  // Group by department for summary
+  // Charge-out derived data
   const deptSummary = rows ? Object.values(
     rows.reduce((acc, row) => {
       if (!acc[row.gl_number]) {
@@ -48,20 +61,32 @@ export default function Reports() {
 
   const grandTotal = rows ? rows.reduce((s, r) => s + r.total, 0) : 0;
 
+  // GL Swap derived data
+  const swapTotal = swapRows ? swapRows.reduce((s, r) => s + r.price, 0) : 0;
+  const swapDeptCount = swapRows
+    ? new Set([...swapRows.map(r => r.from_department_name), ...swapRows.map(r => r.to_department_name)]).size
+    : 0;
+
+  // Active report has loaded data
+  const hasChargeOutData = reportType === 'chargeOuts' && rows !== null;
+  const hasSwapData = reportType === 'glSwaps' && swapRows !== null;
+  const hasData = hasChargeOutData || hasSwapData;
+  const hasResults = (reportType === 'chargeOuts' && rows?.length > 0) || (reportType === 'glSwaps' && swapRows?.length > 0);
+
   return (
     <div className="p-8">
       <div className="mb-7">
         <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-        <p className="text-gray-500 mt-1">Generate monthly charge-out reports for finance</p>
+        <p className="text-gray-500 mt-1">Generate monthly reports for finance</p>
       </div>
 
       {/* Controls */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
         <div className="flex items-end gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
             <select
-              value={month} onChange={e => { setMonth(Number(e.target.value)); setRows(null); }}
+              value={month} onChange={e => { setMonth(Number(e.target.value)); clearResults(); }}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
@@ -70,7 +95,7 @@ export default function Reports() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Year</label>
             <select
-              value={year} onChange={e => { setYear(Number(e.target.value)); setRows(null); }}
+              value={year} onChange={e => { setYear(Number(e.target.value)); clearResults(); }}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
@@ -84,7 +109,7 @@ export default function Reports() {
             <Search size={15} />
             {loading ? 'Loading...' : 'Preview Report'}
           </button>
-          {rows && rows.length > 0 && (
+          {hasResults && (
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
@@ -96,22 +121,50 @@ export default function Reports() {
         </div>
       </div>
 
-      {rows === null && !loading && (
+      {/* Report type tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          onClick={() => setReportType('chargeOuts')}
+          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            reportType === 'chargeOuts'
+              ? 'border-brand-600 text-brand-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Charge-Outs
+        </button>
+        <button
+          onClick={() => setReportType('glSwaps')}
+          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            reportType === 'glSwaps'
+              ? 'border-brand-600 text-brand-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          GL Swaps
+        </button>
+      </div>
+
+      {/* Empty state */}
+      {!hasData && !loading && (
         <div className="py-20 text-center">
           <FileBarChart2 className="mx-auto text-gray-300 mb-3" size={48} />
           <p className="text-gray-500 font-medium">Select a month and preview the report</p>
         </div>
       )}
 
-      {rows !== null && rows.length === 0 && (
+      {/* No results */}
+      {hasData && !hasResults && (
         <div className="py-16 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-gray-500 font-medium">No charge-outs for {MONTH_NAMES[month - 1]} {year}</p>
+          <p className="text-gray-500 font-medium">
+            No {reportType === 'chargeOuts' ? 'charge-outs' : 'GL swaps'} for {MONTH_NAMES[month - 1]} {year}
+          </p>
         </div>
       )}
 
-      {rows && rows.length > 0 && (
+      {/* ── Charge-Outs Report ── */}
+      {reportType === 'chargeOuts' && rows && rows.length > 0 && (
         <>
-          {/* Summary cards */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transactions</p>
@@ -127,7 +180,6 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* Department Summary */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="font-semibold text-gray-900">Summary by Department</h2>
@@ -156,7 +208,6 @@ export default function Reports() {
             </table>
           </div>
 
-          {/* Full Transaction Table */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="font-semibold text-gray-900">All Transactions — {MONTH_NAMES[month - 1]} {year}</h2>
@@ -200,6 +251,78 @@ export default function Reports() {
                           ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{row.ticket_number}</span>
                           : <span className="text-gray-400">—</span>}
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── GL Swaps Report ── */}
+      {reportType === 'glSwaps' && swapRows && swapRows.length > 0 && (
+        <>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Swaps</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{swapRows.length}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Departments Involved</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{swapDeptCount}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Reclassified</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{fmt(swapTotal)}</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-semibold text-gray-900">GL Swaps — {MONTH_NAMES[month - 1]} {year}</h2>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-700"
+              >
+                <Download size={14} /> Export CSV
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">PO #</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Item</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">From Dept / GL</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">To Dept / GL</th>
+                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Price</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Swapped By</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {swapRows.map(row => (
+                    <tr key={row.id} className="hover:bg-gray-50/50">
+                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(row.swapped_at)}</td>
+                      <td className="px-5 py-3">
+                        {row.po_number
+                          ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{row.po_number}</span>
+                          : <span className="text-gray-400">—</span>}
+                      </td>
+                      <td className="px-5 py-3 font-medium text-gray-900">{row.item_name}</td>
+                      <td className="px-5 py-3">
+                        <div className="text-gray-700">{row.from_department_name}</div>
+                        <span className="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{row.from_gl_number}</span>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="text-gray-700">{row.to_department_name}</div>
+                        <span className="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{row.to_gl_number}</span>
+                      </td>
+                      <td className="px-5 py-3 text-right font-semibold text-gray-900">{fmt(row.price)}</td>
+                      <td className="px-5 py-3 text-gray-600">{row.swapped_by}</td>
+                      <td className="px-5 py-3 text-gray-500">{row.notes || <span className="text-gray-300">—</span>}</td>
                     </tr>
                   ))}
                 </tbody>
