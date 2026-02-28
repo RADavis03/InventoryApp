@@ -22,4 +22,7 @@ try {
   db.exec("ALTER TABLE items ADD COLUMN is_custom INTEGER NOT NULL DEFAULT 0");
 } catch (e) { /* column already exists */ }
 
+// Seed the single login_lockout row
+db.exec("INSERT OR IGNORE INTO login_lockout (id) VALUES (1)");
+
 module.exports = db;

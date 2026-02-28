@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Users as UsersIcon } from 'lucide-react';
+import { Plus, Trash2, Users as UsersIcon, ShieldAlert, ShieldCheck } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -13,6 +13,8 @@ export default function Users() {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [lockout, setLockout] = useState(null);
+  const [resetting, setResetting] = useState(false);
   const { refreshHasUsers } = useAuth();
 
   const load = () => {
@@ -23,7 +25,23 @@ export default function Users() {
     }).finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  const loadLockout = () => {
+    api.users.getLockout().then(setLockout).catch(() => {});
+  };
+
+  useEffect(() => { load(); loadLockout(); }, []);
+
+  const handleResetLockout = async () => {
+    setResetting(true);
+    try {
+      await api.users.resetLockout();
+      loadLockout();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const openAdd = () => {
     setForm(EMPTY);
@@ -77,6 +95,47 @@ export default function Users() {
           <Plus size={16} /> Add User
         </button>
       </div>
+
+      {/* Lockout status card */}
+      {lockout && (
+        <div className={`rounded-xl border shadow-sm p-5 mb-6 flex items-center justify-between ${
+          lockout.locked
+            ? 'bg-red-50 border-red-200'
+            : lockout.failed_attempts > 0
+              ? 'bg-amber-50 border-amber-200'
+              : 'bg-green-50 border-green-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            {lockout.locked
+              ? <ShieldAlert className="text-red-600 flex-shrink-0" size={20} />
+              : <ShieldCheck className={lockout.failed_attempts > 0 ? 'text-amber-600 flex-shrink-0' : 'text-green-600 flex-shrink-0'} size={20} />
+            }
+            <div>
+              <p className={`text-sm font-semibold ${lockout.locked ? 'text-red-700' : lockout.failed_attempts > 0 ? 'text-amber-700' : 'text-green-700'}`}>
+                {lockout.locked
+                  ? 'Login locked — too many failed attempts'
+                  : lockout.failed_attempts > 0
+                    ? `${lockout.failed_attempts} failed attempt${lockout.failed_attempts !== 1 ? 's' : ''} — ${5 - lockout.failed_attempts} remaining before lockout`
+                    : 'No failed login attempts'}
+              </p>
+              {lockout.locked && lockout.locked_at && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  Locked at {new Date(lockout.locked_at + ' UTC').toLocaleString()}
+                </p>
+              )}
+            </div>
+          </div>
+          {(lockout.locked || lockout.failed_attempts > 0) && (
+            <button
+              onClick={handleResetLockout}
+              disabled={resetting}
+              className="ml-4 px-3 py-1.5 text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
+            >
+              {resetting ? 'Resetting…' : 'Reset Lockout'}
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ? (

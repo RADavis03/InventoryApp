@@ -21,6 +21,18 @@ router.post('/', (req, res) => {
   res.status(201).json(user);
 });
 
+// Get lockout status
+router.get('/lockout', (req, res) => {
+  const lockout = db.prepare('SELECT * FROM login_lockout WHERE id = 1').get();
+  res.json(lockout || { id: 1, failed_attempts: 0, locked: 0, locked_at: null });
+});
+
+// Reset lockout (admin action from Users page) — must be before DELETE /:id
+router.delete('/lockout', (req, res) => {
+  db.prepare('UPDATE login_lockout SET failed_attempts = 0, locked = 0, locked_at = NULL WHERE id = 1').run();
+  res.json({ success: true });
+});
+
 // Delete user
 router.delete('/:id', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
@@ -48,13 +60,29 @@ router.post('/login', (req, res) => {
   const { pin } = req.body;
   if (!pin) return res.status(400).json({ error: 'pin is required' });
 
+  const lockout = db.prepare('SELECT * FROM login_lockout WHERE id = 1').get();
+  if (lockout && lockout.locked) {
+    return res.status(423).json({ error: 'System locked after too many failed attempts. Contact your IT administrator.', locked: true });
+  }
+
   const users = db.prepare('SELECT * FROM users').all();
   for (const user of users) {
     if (bcrypt.compareSync(String(pin), user.pin_hash)) {
+      // Successful login — reset attempt counter
+      db.prepare('UPDATE login_lockout SET failed_attempts = 0, locked = 0, locked_at = NULL WHERE id = 1').run();
       return res.json({ id: user.id, name: user.name });
     }
   }
-  res.status(401).json({ error: 'Incorrect PIN' });
+
+  // Wrong PIN — increment attempt count
+  const newCount = (lockout ? lockout.failed_attempts : 0) + 1;
+  if (newCount >= 5) {
+    db.prepare('UPDATE login_lockout SET failed_attempts = ?, locked = 1, locked_at = CURRENT_TIMESTAMP WHERE id = 1').run(newCount);
+    return res.status(423).json({ error: 'System locked after too many failed attempts. Contact your IT administrator.', locked: true });
+  } else {
+    db.prepare('UPDATE login_lockout SET failed_attempts = ? WHERE id = 1').run(newCount);
+    return res.status(401).json({ error: 'Incorrect PIN', attempts_remaining: 5 - newCount });
+  }
 });
 
 module.exports = router;
