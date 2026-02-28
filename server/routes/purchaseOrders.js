@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { logAudit } = require('../lib/audit');
 
 router.get('/', (req, res) => {
   const { item_id } = req.query;
@@ -24,6 +25,7 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   let { item_id, custom_item_name, add_to_inventory, quantity, unit_cost, po_number, notes, received_at } = req.body;
+  const changedBy = req.headers['x-changed-by'] || null;
 
   // Resolve custom item name to an item_id
   if (!item_id && custom_item_name) {
@@ -62,14 +64,29 @@ router.post('/', (req, res) => {
     WHERE po.id = ?
   `).get(result.lastInsertRowid);
 
+  logAudit('purchase_orders', order.id, 'CREATE', changedBy, null, {
+    item_name: order.item_name, quantity: order.quantity, unit_cost: order.unit_cost,
+    po_number: order.po_number, notes: order.notes, received_at: order.received_at,
+  });
+
   res.status(201).json(order);
 });
 
 router.delete('/:id', (req, res) => {
-  const order = db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(req.params.id);
+  const order = db.prepare(`
+    SELECT po.*, i.name AS item_name
+    FROM purchase_orders po
+    JOIN items i ON i.id = po.item_id
+    WHERE po.id = ?
+  `).get(req.params.id);
   if (!order) return res.status(404).json({ error: 'Purchase order not found' });
+  const changedBy = req.headers['x-changed-by'] || null;
 
   db.prepare('DELETE FROM purchase_orders WHERE id = ?').run(req.params.id);
+  logAudit('purchase_orders', order.id, 'DELETE', changedBy, {
+    item_name: order.item_name, quantity: order.quantity, unit_cost: order.unit_cost,
+    po_number: order.po_number, notes: order.notes, received_at: order.received_at,
+  }, null);
   res.json({ success: true });
 });
 

@@ -86,6 +86,24 @@ CREATE TABLE IF NOT EXISTS toner_charge_outs (
   created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS login_lockout (
+  id              INTEGER PRIMARY KEY CHECK (id = 1),
+  failed_attempts INTEGER NOT NULL DEFAULT 0,
+  locked          INTEGER NOT NULL DEFAULT 0,
+  locked_at       DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  table_name  TEXT NOT NULL,       -- 'items' | 'purchase_orders'
+  record_id   INTEGER NOT NULL,
+  action      TEXT NOT NULL,       -- 'CREATE' | 'UPDATE' | 'DELETE'
+  changed_by  TEXT,
+  old_values  TEXT,                -- JSON snapshot before change
+  new_values  TEXT,                -- JSON snapshot after change
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS gl_swaps (
   id                 INTEGER PRIMARY KEY AUTOINCREMENT,
   purchase_order_id  INTEGER NOT NULL REFERENCES purchase_orders(id) ON DELETE RESTRICT,

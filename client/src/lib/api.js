@@ -1,9 +1,16 @@
+import { getUser } from './auth.js';
+
 const BASE = '/api';
 
 async function request(method, path, body) {
+  const user = getUser();
+  const headers = {};
+  if (body) headers['Content-Type'] = 'application/json';
+  if (user?.name) headers['X-Changed-By'] = user.name;
+
   const res = await fetch(`${BASE}${path}`, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : {},
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -20,6 +27,8 @@ export const users = {
   create: (data) => request('POST', '/users', data),
   delete: (id) => request('DELETE', `/users/${id}`),
   login: (pin) => request('POST', '/users/login', { pin }),
+  getLockout: () => request('GET', '/users/lockout'),
+  resetLockout: () => request('DELETE', '/users/lockout'),
 };
 
 export const items = {
@@ -79,4 +88,10 @@ export const glSwaps = {
 export const reports = {
   monthly: (month, year) => request('GET', `/reports/monthly?month=${month}&year=${year}`),
   csvUrl: (month, year) => `${BASE}/reports/monthly/csv?month=${month}&year=${year}`,
+};
+
+export const auditLog = {
+  list:    (params) => request('GET', `/audit-log${params ? '?' + new URLSearchParams(params) : ''}`),
+  users:   ()       => request('GET', '/audit-log/users'),
+  csvUrl:  (params) => `${BASE}/audit-log/csv${params ? '?' + new URLSearchParams(params) : ''}`,
 };
