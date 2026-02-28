@@ -117,14 +117,17 @@ export default function Inventory() {
   const [quickChargeForm, setQuickChargeForm] = useState({});
   const [quickChargeError, setQuickChargeError] = useState('');
 
-  const loadToner = () => {
+  const loadToner = (collapseAll = false) => {
     setTonerLoading(true);
     Promise.all([api.printers.list(), api.toner.list(), api.departments.list()])
-      .then(([prins, tons, depts]) => { setPrinters(prins); setTonerItems(tons); setDepartments(depts); })
+      .then(([prins, tons, depts]) => {
+        setPrinters(prins); setTonerItems(tons); setDepartments(depts);
+        if (collapseAll) setCollapsedPrinters(new Set(prins.map(p => p.id)));
+      })
       .finally(() => setTonerLoading(false));
   };
 
-  useEffect(() => { if (activeTab === 'toner') loadToner(); }, [activeTab]);
+  useEffect(() => { if (activeTab === 'toner') loadToner(true); }, [activeTab]);
 
   // Printer handlers
   const openAddPrinter = () => { setEditPrinter(null); setPrinterForm(PRINTER_EMPTY); setPrinterError(''); setShowPrinterModal(true); };
