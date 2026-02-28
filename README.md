@@ -6,14 +6,14 @@ A self-hosted inventory management system for IT departments. Track consumable s
 
 ## Features
 
-- **Dashboard** — At-a-glance stats, low stock alerts, and quick charge-out entry
-- **Inventory** — Manage items with reorder thresholds and low-stock alerts
-- **Printer Toner** — Track toner cartridges per printer model (B&W and color); log restocks and charge-outs separately from general inventory
+- **Dashboard** — At-a-glance stats, low consumable and low toner alerts, and quick charge-out entry
+- **Inventory** — Manage items with reorder thresholds and low-stock alerts; quick +/− buttons for on-the-spot stock adjustments
+- **Printer Toner** — Track toner cartridges per printer model (B&W and color); collapsible per-printer view; quick +/− stock buttons; shared stock pooling by part number; log restocks and charge-outs separately from general inventory
 - **Departments** — Manage departments and GL numbers (bulk import supported)
 - **Purchase Orders** — Log single or bulk restocks; supports both inventory items and custom/non-inventory items; collapsible view grouped by PO number
 - **Charge-Outs** — Record item deployments to departments with ticket numbers; separate tab for toner charge-outs
 - **GL Swaps** — Reclassify charges between department GL accounts after the fact (finance reclassification workflow)
-- **Reports** — Monthly cost summaries per department with CSV export; separate GL Swaps report tab
+- **Reports** — Monthly cost summaries per department with CSV export; GL Swaps report tab; low item and low toner inventory snapshot reports with CSV export
 
 ---
 
@@ -131,6 +131,7 @@ InventoryApp/
 │   │   └── schema.sql    # Table definitions
 │   └── routes/           # items, departments, purchaseOrders, chargeOuts,
 │                         # glSwaps, printers, toner, tonerChargeOuts, reports
+├── scripts/              # One-time utility scripts (e.g. bulk toner import)
 ├── data/                 # SQLite database (auto-created, gitignored)
 ├── Dockerfile
 └── docker-compose.yml
