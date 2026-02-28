@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw } from 'lucide-react';
+import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const today = () => new Date().toISOString().split('T')[0];
@@ -31,6 +32,7 @@ const RESTOCK_EMPTY  = { quantity: '', notes: '', received_at: today() };
 
 export default function Inventory() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('items');
 
   // ── Items tab ──────────────────────────────────────────
@@ -100,10 +102,17 @@ export default function Inventory() {
   const [restockForm, setRestockForm] = useState(RESTOCK_EMPTY);
   const [restockError, setRestockError] = useState('');
 
+  // Quick charge-out (mini modal for − button)
+  const [departments, setDepartments] = useState([]);
+  const [showQuickChargeModal, setShowQuickChargeModal] = useState(false);
+  const [quickChargeTarget, setQuickChargeTarget] = useState(null);
+  const [quickChargeForm, setQuickChargeForm] = useState({});
+  const [quickChargeError, setQuickChargeError] = useState('');
+
   const loadToner = () => {
     setTonerLoading(true);
-    Promise.all([api.printers.list(), api.toner.list()])
-      .then(([prins, tons]) => { setPrinters(prins); setTonerItems(tons); })
+    Promise.all([api.printers.list(), api.toner.list(), api.departments.list()])
+      .then(([prins, tons, depts]) => { setPrinters(prins); setTonerItems(tons); setDepartments(depts); })
       .finally(() => setTonerLoading(false));
   };
 
@@ -185,6 +194,36 @@ export default function Inventory() {
   };
 
   const setRestock = (k) => (e) => setRestockForm(f => ({ ...f, [k]: e.target.value }));
+
+  // Quick +1 restock (no modal)
+  const handleQuickRestock = async (t) => {
+    try {
+      await api.toner.restock(t.id, { quantity: 1, received_at: today(), notes: null });
+      loadToner();
+    } catch (err) { alert(err.message); }
+  };
+
+  // Quick charge-out (mini modal)
+  const openQuickCharge = (t) => {
+    setQuickChargeTarget(t);
+    setQuickChargeForm({ department_id: '', ticket_number: '', quantity: 1, charged_by: currentUser?.name || '', charged_at: today() });
+    setQuickChargeError('');
+    setShowQuickChargeModal(true);
+  };
+
+  const handleQuickChargeSubmit = async (e) => {
+    e.preventDefault(); setQuickChargeError('');
+    if (quickChargeTarget.stock < parseInt(quickChargeForm.quantity)) {
+      setQuickChargeError(`Only ${quickChargeTarget.stock} in stock.`); return;
+    }
+    try {
+      await api.tonerChargeOuts.create({ ...quickChargeForm, toner_id: quickChargeTarget.id });
+      setShowQuickChargeModal(false);
+      loadToner();
+    } catch (err) { setQuickChargeError(err.message); }
+  };
+
+  const setQC = (k) => (e) => setQuickChargeForm(f => ({ ...f, [k]: e.target.value }));
 
   // Shared part number detection — cartridges with the same part# share stock
   const partNumberCounts = {};
@@ -384,9 +423,19 @@ export default function Inventory() {
                               </td>
                               <td className="px-5 py-3 text-gray-600">{t.brand || <span className="text-gray-300">—</span>}</td>
                               <td className="px-5 py-3 text-center">
-                                <span className={`inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-semibold ${low ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                  {t.stock}
-                                </span>
+                                <div className="flex items-center justify-center gap-1">
+                                  <button onClick={() => openQuickCharge(t)}
+                                    className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                    <Minus size={11} />
+                                  </button>
+                                  <span className={`inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-semibold ${low ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                    {t.stock}
+                                  </span>
+                                  <button onClick={() => handleQuickRestock(t)}
+                                    className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+                                    <Plus size={11} />
+                                  </button>
+                                </div>
                               </td>
                               <td className="px-5 py-3 text-center text-gray-500 text-sm">{t.reorder_threshold}</td>
                               <td className="px-5 py-3 text-gray-500 text-xs max-w-[200px] truncate">{t.notes || <span className="text-gray-300">—</span>}</td>
@@ -575,6 +624,62 @@ export default function Inventory() {
             <button onClick={() => setDeleteTonerConfirm(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
             <button onClick={() => handleTonerDelete(deleteTonerConfirm.id)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">Delete</button>
           </div>
+        </Modal>
+      )}
+
+      {/* ── Quick charge-out modal ── */}
+      {showQuickChargeModal && quickChargeTarget && (
+        <Modal title="Charge Out Toner" onClose={() => setShowQuickChargeModal(false)}>
+          <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${SLOT_STYLE[quickChargeTarget.slot]?.badge}`}>
+              <span className={`w-2 h-2 rounded-full ${SLOT_STYLE[quickChargeTarget.slot]?.dot}`} />
+              {SLOT_STYLE[quickChargeTarget.slot]?.label}
+            </span>
+            <span className="text-sm font-medium text-gray-700">{quickChargeTarget.printer_model}</span>
+            {quickChargeTarget.part_number && <span className="text-xs font-mono text-gray-400">{quickChargeTarget.part_number}</span>}
+            <span className="ml-auto text-xs text-gray-500">In stock: <strong className="text-gray-800">{quickChargeTarget.stock}</strong></span>
+          </div>
+          <form onSubmit={handleQuickChargeSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={quickChargeForm.department_id} onChange={setQC('department_id')} required>
+                  <option value="">Select...</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Quantity <span className="text-red-500">*</span></label>
+                <input type="number" min="1" step="1"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={quickChargeForm.quantity} onChange={setQC('quantity')} required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={quickChargeForm.ticket_number} onChange={setQC('ticket_number')} placeholder="e.g. INC0012345" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
+                <input type="date"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={quickChargeForm.charged_at} onChange={setQC('charged_at')} required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By</label>
+              <input className="w-full border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                value={quickChargeForm.charged_by} readOnly />
+            </div>
+            {quickChargeError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{quickChargeError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setShowQuickChargeModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">Charge Out</button>
+            </div>
+          </form>
         </Modal>
       )}
 
