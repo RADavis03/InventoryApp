@@ -131,7 +131,6 @@ InventoryApp/
 │   │   └── schema.sql    # Table definitions
 │   └── routes/           # items, departments, purchaseOrders, chargeOuts,
 │                         # glSwaps, printers, toner, tonerChargeOuts, reports
-├── scripts/              # One-time utility scripts (e.g. bulk toner import)
 ├── data/                 # SQLite database (auto-created, gitignored)
 ├── Dockerfile
 └── docker-compose.yml
