@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw } from 'lucide-react';
+import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw, ChevronDown } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -101,6 +101,14 @@ export default function Inventory() {
   const [restockTarget, setRestockTarget] = useState(null);
   const [restockForm, setRestockForm] = useState(RESTOCK_EMPTY);
   const [restockError, setRestockError] = useState('');
+
+  // Collapsible printers — stores IDs of collapsed printers (all expanded by default)
+  const [collapsedPrinters, setCollapsedPrinters] = useState(new Set());
+  const togglePrinter = (id) => setCollapsedPrinters(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   // Quick charge-out (mini modal for − button)
   const [departments, setDepartments] = useState([]);
@@ -353,19 +361,27 @@ export default function Inventory() {
               const allSlots = printer.is_color ? SLOTS_COLOR : SLOTS_BW;
               const canAddMore = allSlots.some(s => !existingSlots.includes(s));
 
+              const isCollapsed = collapsedPrinters.has(printer.id);
               return (
                 <div key={printer.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   {/* Printer header */}
-                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 bg-gray-50/60">
-                    <Printer size={16} className="text-gray-400 flex-shrink-0" />
-                    <span className="font-semibold text-gray-900">{printer.model_name}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${printer.is_color ? 'bg-brand-100 text-brand-700' : 'bg-gray-200 text-gray-600'}`}>
-                      {printer.is_color ? 'Color' : 'B&W'}
-                    </span>
-                    {printer.notes && (
-                      <span className="text-xs text-gray-500 truncate max-w-xs">{printer.notes}</span>
-                    )}
-                    <div className="ml-auto flex items-center gap-1">
+                  <div className={`flex items-center gap-3 px-5 py-3.5 bg-gray-50/60 ${!isCollapsed ? 'border-b border-gray-100' : ''}`}>
+                    <button onClick={() => togglePrinter(printer.id)}
+                      className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                      <ChevronDown size={15} className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+                      <Printer size={16} className="text-gray-400 flex-shrink-0" />
+                      <span className="font-semibold text-gray-900">{printer.model_name}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${printer.is_color ? 'bg-brand-100 text-brand-700' : 'bg-gray-200 text-gray-600'}`}>
+                        {printer.is_color ? 'Color' : 'B&W'}
+                      </span>
+                      {printer.notes && (
+                        <span className="text-xs text-gray-500 truncate max-w-xs">{printer.notes}</span>
+                      )}
+                      {isCollapsed && cartridges.length > 0 && (
+                        <span className="text-xs text-gray-400">{cartridges.length} slot{cartridges.length !== 1 ? 's' : ''}</span>
+                      )}
+                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       {canAddMore && (
                         <button onClick={() => openAddToner(printer)}
                           className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2.5 py-1.5 rounded-lg transition-colors">
@@ -378,7 +394,7 @@ export default function Inventory() {
                   </div>
 
                   {/* Toner cartridges */}
-                  {cartridges.length === 0 ? (
+                  {!isCollapsed && (cartridges.length === 0 ? (
                     <div className="px-5 py-4 text-sm text-gray-400">
                       No toner cartridges added yet.{' '}
                       {canAddMore && (
@@ -454,7 +470,7 @@ export default function Inventory() {
                         })}
                       </tbody>
                     </table>
-                  )}
+                  ))}
                 </div>
               );
             })
