@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw, ChevronDown } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
@@ -32,8 +32,9 @@ const RESTOCK_EMPTY  = { quantity: '', notes: '', received_at: today() };
 
 export default function Inventory() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('items');
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'items');
 
   // ── Items tab ──────────────────────────────────────────
   const [items, setItems] = useState([]);
@@ -388,7 +389,7 @@ export default function Inventory() {
                       {canAddMore && (
                         <button onClick={() => openAddToner(printer)}
                           className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-2.5 py-1.5 rounded-lg transition-colors">
-                          <Plus size={13} /> Add Toner
+                          <Plus size={13} /> Add Consumable
                         </button>
                       )}
                       <button onClick={() => openEditPrinter(printer)} className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"><Pencil size={15} /></button>

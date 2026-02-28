@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus } from 'lucide-react';
+import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus, Printer } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+const SLOT_STYLE = {
+  BLACK:           { dot: 'bg-gray-800',   badge: 'bg-gray-100 text-gray-800',     label: 'Black'           },
+  CYAN:            { dot: 'bg-cyan-500',   badge: 'bg-cyan-100 text-cyan-800',     label: 'Cyan'            },
+  MAGENTA:         { dot: 'bg-pink-500',   badge: 'bg-pink-100 text-pink-800',     label: 'Magenta'         },
+  YELLOW:          { dot: 'bg-yellow-400', badge: 'bg-yellow-100 text-yellow-800', label: 'Yellow'          },
+  IMAGING_KIT:     { dot: 'bg-indigo-600', badge: 'bg-indigo-100 text-indigo-700', label: 'Imaging Kit'     },
+  BLACK_DEVELOPER: { dot: 'bg-zinc-700',   badge: 'bg-zinc-100 text-zinc-700',     label: 'Black Developer' },
+  COLOR_DEVELOPER: { dot: 'bg-violet-500', badge: 'bg-violet-100 text-violet-700', label: 'Color Developer' },
+  COLOR_DRUM:      { dot: 'bg-teal-500',   badge: 'bg-teal-100 text-teal-700',     label: 'Color Drum'      },
+  BLACK_DRUM:      { dot: 'bg-stone-600',  badge: 'bg-stone-100 text-stone-700',   label: 'Black Drum'      },
+  WASTE_TONER:     { dot: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700', label: 'Waste Toner'     },
+};
 const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -37,6 +50,7 @@ export default function Dashboard() {
   const emptyCoForm = () => ({ item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: currentUser?.name || '', ticket_number: '', notes: '', charged_at: today() });
 
   const [itemsList, setItemsList] = useState([]);
+  const [tonerList, setTonerList] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [recentChargeOuts, setRecentChargeOuts] = useState([]);
   const [monthCoCount, setMonthCoCount] = useState(0);
@@ -54,8 +68,10 @@ export default function Dashboard() {
       api.items.list(),
       api.chargeOuts.list({ month: now.getMonth() + 1, year: now.getFullYear() }),
       api.departments.list(),
-    ]).then(([its, cos, depts]) => {
+      api.toner.list(),
+    ]).then(([its, cos, depts, tons]) => {
       setItemsList(its);
+      setTonerList(tons);
       setDepartments(depts);
       const sorted = [...cos].sort((a, b) => b.id - a.id).slice(0, 10);
       setRecentChargeOuts(sorted);
@@ -105,6 +121,7 @@ export default function Dashboard() {
   const setco = (k) => (e) => setCoForm(f => ({ ...f, [k]: e.target.value }));
 
   const lowStockItems = itemsList.filter(i => i.stock <= i.reorder_threshold);
+  const lowTonerItems = tonerList.filter(t => t.stock < t.reorder_threshold);
   const monthName = now.toLocaleString('en-US', { month: 'long' });
 
   if (loading) {
@@ -140,18 +157,18 @@ export default function Dashboard() {
         <StatCard icon={DollarSign} label={`${monthName} Total`} value={fmt(monthTotal)} color="green" sub="charged out this month" />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Low Stock Alerts */}
+      <div className="grid grid-cols-4 gap-6">
+        {/* Low Stock Alerts — Consumables */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Low Stock Alerts</h2>
+            <h2 className="font-semibold text-gray-900">Low Stock</h2>
             <Link to="/inventory" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5">
               View all <ChevronRight size={13} />
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
             {lowStockItems.length === 0 ? (
-              <div className="px-5 py-8 text-center text-sm text-gray-400">All items are well stocked</div>
+              <div className="px-5 py-8 text-center text-sm text-gray-400">All items well stocked</div>
             ) : (
               lowStockItems.map(item => (
                 <div key={item.id} className="px-5 py-3 flex items-center justify-between">
@@ -164,6 +181,42 @@ export default function Dashboard() {
                   </span>
                 </div>
               ))
+            )}
+          </div>
+        </div>
+
+        {/* Low Toner Alerts */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Printer size={15} className="text-gray-400" />
+              <h2 className="font-semibold text-gray-900">Low Toner</h2>
+            </div>
+            <Link to="/inventory" state={{ tab: 'toner' }} className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5">
+              View all <ChevronRight size={13} />
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {lowTonerItems.length === 0 ? (
+              <div className="px-5 py-8 text-center text-sm text-gray-400">All toner well stocked</div>
+            ) : (
+              lowTonerItems.map(t => {
+                const style = SLOT_STYLE[t.slot] || SLOT_STYLE.BLACK;
+                return (
+                  <div key={t.id} className="px-5 py-3 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{t.printer_model}</p>
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${style.badge}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                        {style.label}
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 flex-shrink-0">
+                      {t.stock} left
+                    </span>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
