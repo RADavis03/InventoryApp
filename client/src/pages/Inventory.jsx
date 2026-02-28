@@ -46,7 +46,7 @@ export default function Inventory() {
   const [deleteItemConfirm, setDeleteItemConfirm] = useState(null);
 
   const loadItems = () => {
-    setItemsLoading(true);
+    if (items.length === 0) setItemsLoading(true);
     api.items.list().then(setItems).finally(() => setItemsLoading(false));
   };
 
@@ -119,7 +119,7 @@ export default function Inventory() {
   const [quickChargeError, setQuickChargeError] = useState('');
 
   const loadToner = (collapseAll = false) => {
-    setTonerLoading(true);
+    if (printers.length === 0) setTonerLoading(true);
     Promise.all([api.printers.list(), api.toner.list(), api.departments.list()])
       .then(([prins, tons, depts]) => {
         setPrinters(prins); setTonerItems(tons); setDepartments(depts);

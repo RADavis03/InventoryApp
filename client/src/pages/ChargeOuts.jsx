@@ -75,7 +75,7 @@ export default function ChargeOuts() {
   const [deleteConfirm,  setDeleteConfirm]  = useState(null);
 
   const load = () => {
-    setLoading(true);
+    if (chargeOuts.length === 0) setLoading(true);
     Promise.all([
       api.chargeOuts.list({ month: filterMonth, year: filterYear }),
       api.items.list(),
@@ -122,7 +122,7 @@ export default function ChargeOuts() {
   const [purchaseOrders,   setPurchaseOrders]   = useState([]);
 
   const loadSwaps = () => {
-    setSwapLoading(true);
+    if (glSwapList.length === 0) setSwapLoading(true);
     Promise.all([
       api.glSwaps.list({ month: filterMonth, year: filterYear }),
       api.purchaseOrders.list(),
@@ -167,7 +167,7 @@ export default function ChargeOuts() {
   const [tonerCartridges,   setTonerCartridges]   = useState([]);
 
   const loadTonerCOs = () => {
-    setTonerLoading(true);
+    if (tonerCOList.length === 0) setTonerLoading(true);
     Promise.all([
       api.tonerChargeOuts.list({ month: filterMonth, year: filterYear }),
       api.toner.list(),

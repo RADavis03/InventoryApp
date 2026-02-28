@@ -19,7 +19,7 @@ export default function Departments() {
   const [bulkLoading, setBulkLoading] = useState(false);
 
   const load = () => {
-    setLoading(true);
+    if (departments.length === 0) setLoading(true);
     api.departments.list().then(setDepartments).finally(() => setLoading(false));
   };
 

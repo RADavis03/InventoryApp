@@ -104,7 +104,7 @@ export default function PurchaseOrders() {
   const location = useLocation();
 
   const load = () => {
-    setLoading(true);
+    if (orders.length === 0) setLoading(true);
     Promise.all([api.purchaseOrders.list(), api.items.list()])
       .then(([pos, its]) => { setOrders(pos); setItems(its); })
       .finally(() => setLoading(false));
