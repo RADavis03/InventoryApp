@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
-const BW_SLOTS    = ['BLACK', 'IMAGING_KIT'];
+const BW_SLOTS    = ['BLACK', 'IMAGING_KIT', 'BLACK_DRUM'];
 const COLOR_SLOTS = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK_DEVELOPER', 'COLOR_DEVELOPER', 'COLOR_DRUM', 'BLACK_DRUM', 'WASTE_TONER'];
 
 const SLOT_ORDER = `CASE tc.slot
