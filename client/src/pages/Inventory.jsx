@@ -382,7 +382,18 @@ export default function Inventory() {
                         <span className="text-xs text-gray-500 truncate max-w-xs">{printer.notes}</span>
                       )}
                       {isCollapsed && cartridges.length > 0 && (
-                        <span className="text-xs text-gray-400">{cartridges.length} slot{cartridges.length !== 1 ? 's' : ''}</span>
+                        <>
+                          <span className="text-xs text-gray-400">{cartridges.length} slot{cartridges.length !== 1 ? 's' : ''}</span>
+                          {(() => {
+                            const lowCount = cartridges.filter(t => t.stock < t.reorder_threshold).length;
+                            return lowCount > 0 ? (
+                              <span className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                <AlertTriangle size={11} />
+                                {lowCount} low
+                              </span>
+                            ) : null;
+                          })()}
+                        </>
                       )}
                     </button>
                     <div className="flex items-center gap-1 flex-shrink-0">
