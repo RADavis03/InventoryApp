@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw, ChevronDown } from 'lucide-react';
+import { Plus, Minus, Pencil, Trash2, AlertTriangle, Package, ShoppingCart, Printer, RefreshCw, ChevronDown, Search, X } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -102,6 +102,9 @@ export default function Inventory() {
   const [restockTarget, setRestockTarget] = useState(null);
   const [restockForm, setRestockForm] = useState(RESTOCK_EMPTY);
   const [restockError, setRestockError] = useState('');
+
+  // Toner search
+  const [tonerSearch, setTonerSearch] = useState('');
 
   // Collapsible printers — stores IDs of collapsed printers (all expanded by default)
   const [collapsedPrinters, setCollapsedPrinters] = useState(new Set());
@@ -242,6 +245,20 @@ export default function Inventory() {
   tonerItems.forEach(t => { if (t.part_number) partNumberCounts[t.part_number] = (partNumberCounts[t.part_number] || 0) + 1; });
   const isShared = (pn) => pn && partNumberCounts[pn] > 1;
 
+  // Toner search filtering
+  const tonerQuery = tonerSearch.trim().toLowerCase();
+  const filteredPrinters = tonerQuery
+    ? printers.filter(p => {
+        if (p.model_name.toLowerCase().includes(tonerQuery)) return true;
+        return tonerItems.some(t => t.printer_id === p.id && (
+          (t.part_number || '').toLowerCase().includes(tonerQuery) ||
+          (t.brand || '').toLowerCase().includes(tonerQuery) ||
+          (t.notes || '').toLowerCase().includes(tonerQuery) ||
+          (SLOT_STYLE[t.slot]?.label || '').toLowerCase().includes(tonerQuery)
+        ));
+      })
+    : printers;
+
   // Available slots for add-toner modal
   const addTonerPrinter = printers.find(p => p.id === parseInt(tonerForm.printer_id));
   const usedSlots = tonerItems.filter(t => t.printer_id === parseInt(tonerForm.printer_id) && (!editToner || t.id !== editToner.id)).map(t => t.slot);
@@ -350,6 +367,25 @@ export default function Inventory() {
       {/* ── Toner tab ── */}
       {activeTab === 'toner' && (
         <div className="space-y-4">
+          {/* Search bar */}
+          {printers.length > 0 && (
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                className="w-full border border-gray-200 rounded-lg pl-9 pr-9 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                placeholder="Search by printer model, part #, brand, or slot…"
+                value={tonerSearch}
+                onChange={e => setTonerSearch(e.target.value)}
+              />
+              {tonerSearch && (
+                <button onClick={() => setTonerSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          )}
+
           {tonerLoading ? (
             <div className="py-16 text-center text-gray-400">Loading...</div>
           ) : printers.length === 0 ? (
@@ -358,14 +394,29 @@ export default function Inventory() {
               <p className="text-gray-500 font-medium">No printers added yet</p>
               <p className="text-gray-400 text-sm mt-1">Add a printer model to start tracking toner</p>
             </div>
+          ) : filteredPrinters.length === 0 ? (
+            <div className="py-12 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
+              <Search className="mx-auto text-gray-300 mb-3" size={36} />
+              <p className="text-gray-500 font-medium">No results for "{tonerSearch}"</p>
+              <button onClick={() => setTonerSearch('')} className="mt-2 text-sm text-brand-600 hover:text-brand-700 font-medium">Clear search</button>
+            </div>
           ) : (
-            printers.map(printer => {
-              const cartridges = tonerItems.filter(t => t.printer_id === printer.id);
-              const existingSlots = cartridges.map(t => t.slot);
+            filteredPrinters.map(printer => {
+              const printerNameMatches = !tonerQuery || printer.model_name.toLowerCase().includes(tonerQuery);
+              const allCartridges = tonerItems.filter(t => t.printer_id === printer.id);
+              const cartridges = tonerQuery && !printerNameMatches
+                ? allCartridges.filter(t =>
+                    (t.part_number || '').toLowerCase().includes(tonerQuery) ||
+                    (t.brand || '').toLowerCase().includes(tonerQuery) ||
+                    (t.notes || '').toLowerCase().includes(tonerQuery) ||
+                    (SLOT_STYLE[t.slot]?.label || '').toLowerCase().includes(tonerQuery)
+                  )
+                : allCartridges;
+              const existingSlots = allCartridges.map(t => t.slot);
               const allSlots = printer.is_color ? SLOTS_COLOR : SLOTS_BW;
               const canAddMore = allSlots.some(s => !existingSlots.includes(s));
 
-              const isCollapsed = collapsedPrinters.has(printer.id);
+              const isCollapsed = tonerQuery ? false : collapsedPrinters.has(printer.id);
               return (
                 <div key={printer.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   {/* Printer header */}
