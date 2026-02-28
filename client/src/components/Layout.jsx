@@ -10,6 +10,7 @@ import {
   Users,
   LogOut,
   ClipboardList,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
@@ -65,6 +66,18 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="px-3 pb-2">
+          <a
+            href="/user-guide.html"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
+            <BookOpen size={18} className="flex-shrink-0" />
+            User Guide
+          </a>
+        </div>
 
         <div className="px-4 py-4 border-t border-slate-700">
           {currentUser ? (
