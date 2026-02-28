@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAH IT Inventory — User Guide</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:      #580259;
+      --brand-dark: #3e0140;
+      --brand-lt:   #f5eaf5;
+      --gray-50:    #f9fafb;
+      --gray-100:   #f3f4f6;
+      --gray-200:   #e5e7eb;
+      --gray-400:   #9ca3af;
+      --gray-500:   #6b7280;
+      --gray-700:   #374151;
+      --gray-900:   #111827;
+      --green:      #16a34a;
+      --red:        #dc2626;
+      --amber:      #d97706;
+      --blue:       #2563eb;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--gray-700);
+      background: #fff;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: 28px; font-weight: 700; color: var(--gray-900); }
+    h2 { font-size: 20px; font-weight: 700; color: var(--brand); margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-lt); }
+    h3 { font-size: 15px; font-weight: 600; color: var(--gray-900); margin: 22px 0 8px; }
+    p  { margin-bottom: 10px; }
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li { margin-bottom: 5px; }
+    strong { color: var(--gray-900); }
+    code {
+      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--brand);
+    }
+
+    /* ── Cover ── */
+    .cover {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 40px;
+    }
+    .cover-icon {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .cover h1 { color: #fff; font-size: 24px; margin-bottom: 2px; }
+    .cover p  { color: rgba(255,255,255,0.75); font-size: 13px; margin: 0; }
+
+    /* ── Table of contents ── */
+    .toc {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+    .toc h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--gray-500); border: none; margin: 0 0 12px; padding: 0; }
+    .toc ol { counter-reset: toc; padding: 0; list-style: none; column-count: 2; column-gap: 32px; }
+    .toc li { counter-increment: toc; margin-bottom: 6px; }
+    .toc a  { color: var(--brand); text-decoration: none; font-size: 13px; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Info / tip / warning boxes ── */
+    .box {
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .box-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .box-tip  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .box-info { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .box-warn { background: #fffbeb; border: 1px solid #fde68a; }
+    .box-tip  .box-icon { color: var(--green); }
+    .box-info .box-icon { color: var(--blue); }
+    .box-warn .box-icon { color: var(--amber); }
+
+    /* ── Steps ── */
+    .steps { counter-reset: steps; list-style: none; padding: 0; margin: 10px 0 14px; }
+    .steps li {
+      counter-increment: steps;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(steps);
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+
+    /* ── Badge pills ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-amber  { background: #fef3c7; color: #92400e; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+    .badge-purple { background: var(--brand-lt); color: var(--brand-dark); }
+    .badge-gray   { background: var(--gray-100); color: var(--gray-700); }
+
+    /* ── Screenshot-style mockup boxes ── */
+    .screen {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .screen-header {
+      font-weight: 600;
+      color: var(--gray-500);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 8px;
+    }
+
+    /* ── Nav item preview ── */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .nav-item {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    .nav-item-icon { font-size: 18px; margin-bottom: 4px; }
+    .nav-item-label { font-weight: 600; color: var(--gray-900); }
+    .nav-item-desc  { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    th { background: var(--gray-50); text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-500); border-bottom: 1px solid var(--gray-200); }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--gray-200); margin: 32px 0; }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 24px 32px; font-size: 13px; }
+      h2 { page-break-before: always; }
+      h2:first-of-type { page-break-before: avoid; }
+      .cover { page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .toc { page-break-after: always; }
+      .box, .screen, .nav-item { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-icon">🖥️</div>
+  <div>
+    <h1>GAH IT Inventory</h1>
+    <p>User Guide &nbsp;·&nbsp; GAH IT Department &nbsp;·&nbsp; Revised February 2026</p>
+  </div>
+</div>
+
+<p>
+  This guide walks you through every section of the <strong>GAH IT Inventory</strong> system —
+  from signing in to running reports. Keep it handy as a reference whenever you're unsure how
+  something works.
+</p>
+
+<!-- ══════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+══════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#signin">Signing In</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#inventory">Inventory</a></li>
+    <li><a href="#toner">Printer Toner</a></li>
+    <li><a href="#departments">Departments</a></li>
+    <li><a href="#purchase-orders">Purchase Orders</a></li>
+    <li><a href="#charge-outs">Charge-Outs</a></li>
+    <li><a href="#reports">Reports</a></li>
+    <li><a href="#users">Users &amp; Security</a></li>
+    <li><a href="#audit-log">Audit Log</a></li>
+    <li><a href="#tips">Tips &amp; FAQ</a></li>
+  </ol>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     1. SIGNING IN
+══════════════════════════════════════════════════════ -->
+<h2 id="signin">1. Signing In</h2>
+
+<p>
+  The app uses a <strong>5-digit PIN</strong> to identify who you are. Every action you take
+  (adding items, logging charge-outs, etc.) is recorded under your name, so it's important
+  to use your own PIN.
+</p>
+
+<ol class="steps">
+  <li>Open the app in your web browser. You will land on the PIN entry screen.</li>
+  <li>Enter your 5-digit PIN using the on-screen keypad or your keyboard's number keys.</li>
+  <li>The app signs you in automatically once all 5 digits are entered — no extra button to press.</li>
+  <li>You are taken to the <strong>Dashboard</strong> and stay signed in as long as you are actively using the app.</li>
+</ol>
+
+<div class="box box-warn">
+  <span class="box-icon">⚠️</span>
+  <div>
+    <strong>Automatic sign-out:</strong> The app signs you out after <strong>5 minutes of inactivity</strong>
+    to protect against unauthorized access. Simply re-enter your PIN when prompted.
+  </div>
+</div>
+
+<h3>Lockout Protection</h3>
+<p>
+  After <strong>5 consecutive wrong PIN attempts</strong>, the system locks itself.
+  A red "System Locked" screen will appear and no one will be able to sign in until an
+  administrator resets the lockout from the <a href="#users">Users page</a>.
+  The screen will warn you after 3 wrong attempts so you can slow down and be careful.
+</p>
+
+<div class="box box-tip">
+  <span class="box-icon">💡</span>
+  <div>If you forget your PIN, contact your IT administrator. They can delete and recreate your user account with a new PIN.</div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     2. DASHBOARD
+══════════════════════════════════════════════════════ -->
+<h2 id="dashboard">2. Dashboard</h2>
+
+<p>
+  The Dashboard is the first screen you see after signing in. It gives you a quick
+  snapshot of the current state of the inventory.
+</p>
+
+<h3>What You'll See</h3>
+<table>
+  <thead>
+    <tr><th>Section</th><th>What it shows</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Stats cards</strong></td><td>Total number of item types, total units in stock, departments, and recent charge-outs.</td></tr>
+    <tr><td><strong>Low Stock Alerts</strong></td><td>Items whose current stock is at or below their reorder threshold. These are highlighted in red as a reminder to reorder.</td></tr>
+    <tr><td><strong>Recent Charge-Outs</strong></td><td>The last several items that were deployed/issued, so you can quickly see recent activity.</td></tr>
+  </tbody>
+</table>
+
+<h3>Quick Charge-Out</h3>
+<p>
+  The <strong>New Charge-Out</strong> button on the Dashboard lets you log an item deployment
+  without leaving the page. A form slides open — fill in the item, department, quantity, and
+  your ticket number, then click <strong>Save</strong>. The dashboard stats refresh automatically.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     3. INVENTORY (Items)
+══════════════════════════════════════════════════════ -->
+<h2 id="inventory">3. Inventory</h2>
+
+<p>
+  The <strong>Inventory</strong> page has two tabs: <strong>Items</strong> (consumables like
+  cables, mice, keyboards, etc.) and <strong>Printer Toner</strong>. This section covers the
+  Items tab; see <a href="#toner">Section 4</a> for Printer Toner.
+</p>
+
+<h3>Reading the Item List</h3>
+<p>Each row in the table shows one item type:</p>
+<table>
+  <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Item</strong></td><td>The name of the item. A <span style="color:#ef4444">⚠</span> icon appears when stock is low.</td></tr>
+    <tr><td><strong>Description</strong></td><td>Optional extra detail about the item.</td></tr>
+    <tr><td><strong>Stock</strong></td>
+        <td>
+          Current quantity on hand.<br>
+          <span class="badge badge-green">12</span> = healthy &nbsp;
+          <span class="badge badge-red">2</span> = at or below reorder threshold
+        </td></tr>
+    <tr><td><strong>Unit Price</strong></td><td>The price from the most recent purchase order for this item.</td></tr>
+    <tr><td><strong>Reorder At</strong></td><td>When stock hits this number or below, the row turns red as a warning.</td></tr>
+  </tbody>
+</table>
+
+<div class="box box-info">
+  <span class="box-icon">ℹ️</span>
+  <div>
+    <strong>Stock is always calculated live.</strong> It equals total units received (from Purchase Orders)
+    minus total units deployed (from Charge-Outs). There is no manual stock adjustment — everything
+    flows through POs and charge-outs.
+  </div>
+</div>
+
+<h3>Adding a New Item</h3>
+<ol class="steps">
+  <li>Click <strong>Add Item</strong> (top-right of the page).</li>
+  <li>Enter the item <strong>Name</strong> (required).</li>
+  <li>Optionally fill in Description, Unit Price, and Reorder Threshold.</li>
+  <li>Click <strong>Add Item</strong> to save.</li>
+</ol>
+
+<h3>Editing an Item</h3>
+<p>Click the <strong>pencil icon</strong> on any row to open the edit form. Change the fields you need, then click <strong>Save Changes</strong>.</p>
+
+<h3>Deleting an Item</h3>
+<p>Click the <strong>trash icon</strong> on any row. You will be asked to confirm. Deleting an item also removes all its associated purchase orders and charge-out records, so do this with care.</p>
+
+<h3>Restocking Items</h3>
+<p>
+  Click the <strong>Restock Items</strong> button to go directly to the Bulk Purchase Order form,
+  where you can log a new stock delivery for one or many items at once.
+  See <a href="#purchase-orders">Section 6 — Purchase Orders</a> for full details.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     4. PRINTER TONER
+══════════════════════════════════════════════════════ -->
+<h2 id="toner">4. Printer Toner</h2>
+
+<p>
+  The <strong>Printer Toner</strong> tab (inside Inventory) tracks toner cartridges
+  grouped by printer model. Each printer can have multiple cartridge slots (Black, Cyan,
+  Magenta, Yellow, etc.).
+</p>
+
+<h3>How It's Organized</h3>
+<ul>
+  <li>Each <strong>printer model</strong> appears as a collapsible card.</li>
+  <li>Click the card header to expand or collapse the cartridge list for that printer.</li>
+  <li>A <span class="badge badge-amber">⚠ 2 low</span> badge on a collapsed printer means some cartridges are running low.</li>
+</ul>
+
+<h3>Searching</h3>
+<p>
+  Use the <strong>search bar</strong> at the top of the toner tab to filter by any of:
+  printer model name, part number, brand, slot label (e.g. "Cyan"), or notes.
+  Matching printers expand automatically. Clear the search with the <strong>✕</strong> button.
+</p>
+
+<h3>Adding a Printer Model</h3>
+<ol class="steps">
+  <li>Click <strong>Add Printer</strong> (top-right).</li>
+  <li>Enter the model name (e.g. <code>HP LaserJet M404dn</code>).</li>
+  <li>Check <strong>Color printer</strong> if it uses color toner; leave unchecked for black-and-white.</li>
+  <li>Add optional notes, then click <strong>Add Printer</strong>.</li>
+</ol>
+
+<h3>Adding a Toner Cartridge Slot</h3>
+<ol class="steps">
+  <li>Expand a printer card, then click <strong>Add Consumable</strong>.</li>
+  <li>Select the <strong>Slot</strong> (Black, Cyan, Imaging Kit, etc.).</li>
+  <li>Enter the <strong>Part Number</strong> and <strong>Brand</strong> (recommended for ordering).</li>
+  <li>Set a <strong>Reorder Threshold</strong> — the stock level at which you want a low-stock warning.</li>
+  <li>Click <strong>Add Cartridge</strong>.</li>
+</ol>
+
+<div class="box box-info">
+  <span class="box-icon">ℹ️</span>
+  <div>
+    <strong>Shared part numbers:</strong> If two different printers use the same toner (same part number),
+    the system automatically links their stock. Restocking one updates the shared total shown on both.
+    A <span class="badge badge-purple">Shared</span> badge appears on the part number.
+  </div>
+</div>
+
+<h3>Adjusting Stock — Quick Buttons</h3>
+<table>
+  <thead><tr><th>Button</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><strong>+ (plus)</strong> next to the stock number</td><td>Instantly adds 1 unit to stock (recorded as today's date). Use this for quick single-unit restocks.</td></tr>
+    <tr><td><strong>− (minus)</strong> next to the stock number</td><td>Opens the <strong>Charge Out Toner</strong> form — select department, quantity, and ticket number to log a deployment.</td></tr>
+    <tr><td><strong>Restock</strong> button (right side)</td><td>Opens the full restock form where you can enter a specific quantity and date received.</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     5. DEPARTMENTS
+══════════════════════════════════════════════════════ -->
+<h2 id="departments">5. Departments</h2>
+
+<p>
+  Departments represent the areas of the organization that receive IT supplies.
+  Every charge-out must be linked to a department, so this list needs to be
+  kept up to date.
+</p>
+
+<h3>Each Department Record Contains</h3>
+<ul>
+  <li><strong>Department Name</strong> — e.g. "Accounting", "Nursing"</li>
+  <li><strong>GL Number</strong> — the general ledger account number used for billing/reporting</li>
+</ul>
+
+<h3>Adding a Department</h3>
+<ol class="steps">
+  <li>Click <strong>Add Department</strong>.</li>
+  <li>Enter the name and GL number.</li>
+  <li>Click <strong>Add Department</strong> to save.</li>
+</ol>
+
+<h3>Bulk Import</h3>
+<p>
+  If you have a list of departments to add at once, use the <strong>Bulk Import</strong> button.
+  Paste one department per line in the format:
+</p>
+<div class="screen">
+  <div class="screen-header">Paste format (one per line)</div>
+  Department Name, GL Number<br>
+  Accounting, 10-4001<br>
+  Human Resources, 10-4015<br>
+  Nursing 2nd Floor, 20-5102
+</div>
+<p>The system validates every line before saving and reports success or failure for each one individually.</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     6. PURCHASE ORDERS
+══════════════════════════════════════════════════════ -->
+<h2 id="purchase-orders">6. Purchase Orders</h2>
+
+<p>
+  Purchase Orders (POs) record when new stock arrives. Logging a PO is what increases
+  inventory counts. You can log a single item receipt or an entire order with multiple
+  line items at once.
+</p>
+
+<h3>Single Purchase — "Log Purchase"</h3>
+<ol class="steps">
+  <li>Click <strong>Log Purchase</strong> (top-right).</li>
+  <li>Select the <strong>Item</strong> from the dropdown, or switch to <strong>Custom</strong> to type a one-off item name.</li>
+  <li>Enter the <strong>Date Received</strong>, <strong>Quantity</strong>, and <strong>Unit Cost</strong>.</li>
+  <li>Optionally add a <strong>PO Number</strong> and <strong>Notes</strong>.</li>
+  <li>Click <strong>Log Purchase</strong>. Stock updates immediately.</li>
+</ol>
+
+<h3>Bulk Purchase Order — Multiple Items at Once</h3>
+<ol class="steps">
+  <li>Click <strong>Bulk PO</strong> (or click <strong>Restock Items</strong> from the Inventory page).</li>
+  <li>Fill in the shared <strong>PO Number</strong>, <strong>Date Received</strong>, and optional Notes that apply to the whole order.</li>
+  <li>Each row in the table is one line item. Select an item, enter quantity and unit cost.</li>
+  <li>Click <strong>+ Add Item</strong> to add more rows as needed.</li>
+  <li>Click <strong>Submit PO</strong>. Each line is saved individually — if one fails, the others still save, and you'll see a summary.</li>
+</ol>
+
+<div class="box box-tip">
+  <span class="box-icon">💡</span>
+  <div>
+    Unit costs are pre-filled from each item's most recent purchase price when you select it —
+    edit them if this order has a different price.
+  </div>
+</div>
+
+<h3>Viewing PO History</h3>
+<p>
+  Orders are grouped by PO number on the list page. Click a group header to expand it and
+  see the individual line items. The total cost per PO group is shown in the collapsed header.
+</p>
+
+<h3>Deleting a Purchase Order Line</h3>
+<p>
+  Expand the PO group, then click the <strong>trash icon</strong> on any line item.
+  This removes that receipt and <em>reduces</em> the item's stock accordingly.
+  Only delete entries that were logged by mistake.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     7. CHARGE-OUTS
+══════════════════════════════════════════════════════ -->
+<h2 id="charge-outs">7. Charge-Outs</h2>
+
+<p>
+  A <strong>Charge-Out</strong> records when supplies are deployed or issued to a department.
+  Logging a charge-out reduces the inventory count and creates a billing record.
+</p>
+
+<h3>Logging a Charge-Out</h3>
+<ol class="steps">
+  <li>Go to <strong>Charge-Outs</strong> in the sidebar, then click <strong>New Charge-Out</strong>.</li>
+  <li>Select the <strong>Item</strong> being deployed.</li>
+  <li>Select the <strong>Department</strong> receiving it.</li>
+  <li>Enter the <strong>Quantity</strong>. The system will warn you if stock is insufficient.</li>
+  <li>The <strong>Unit Cost</strong> pre-fills from the item's current price — edit if needed.</li>
+  <li>Enter a <strong>Ticket Number</strong> (your helpdesk ticket reference) and the <strong>Date</strong>.</li>
+  <li><strong>Charged By</strong> is filled in automatically from your login name.</li>
+  <li>Click <strong>Save</strong>.</li>
+</ol>
+
+<div class="box box-tip">
+  <span class="box-icon">💡</span>
+  <div>You can also log a charge-out directly from the <strong>Dashboard</strong> using the
+  Quick Charge-Out button — handy when you're quickly processing a ticket without navigating away.</div>
+</div>
+
+<h3>Filtering the Charge-Out List</h3>
+<p>
+  Use the <strong>month and year</strong> dropdowns at the top of the Charge-Outs page to filter
+  the list to a specific period. This makes it easy to review what was deployed in a given month.
+</p>
+
+<h3>Deleting a Charge-Out</h3>
+<p>
+  Click the trash icon on a row to remove a charge-out. This will <em>return</em> the quantity
+  to inventory. Only delete entries that were logged in error.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     8. REPORTS
+══════════════════════════════════════════════════════ -->
+<h2 id="reports">8. Reports</h2>
+
+<p>
+  The Reports page generates a <strong>monthly charge-out summary</strong> — a full list of
+  everything deployed in a selected month, broken down by department.
+</p>
+
+<h3>Generating a Report</h3>
+<ol class="steps">
+  <li>Select the <strong>Month</strong> and <strong>Year</strong> using the dropdowns.</li>
+  <li>The report loads automatically and shows each charge-out line: date, item, department, GL number, quantity, unit cost, and total.</li>
+  <li>A <strong>Department Summary</strong> section at the bottom totals up the cost per department for the month.</li>
+</ol>
+
+<h3>Exporting to CSV</h3>
+<p>
+  Click <strong>Export CSV</strong> to download the monthly report as a spreadsheet-compatible file.
+  This is useful for sharing with finance or pasting into billing systems.
+  The file is named automatically: <code>IT-Inventory-MonthName-Year.csv</code>
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     9. USERS & SECURITY
+══════════════════════════════════════════════════════ -->
+<h2 id="users">9. Users &amp; Security</h2>
+
+<p>
+  The <strong>Users</strong> page is where IT administrators manage who can sign in to the system.
+</p>
+
+<h3>Adding a User</h3>
+<ol class="steps">
+  <li>Click <strong>Add User</strong>.</li>
+  <li>Enter the person's full name.</li>
+  <li>Enter a 5-digit PIN for them. Choose something they can remember but others won't guess easily.</li>
+  <li>Click <strong>Add User</strong>. The PIN is stored securely (encrypted) — it cannot be retrieved or viewed after saving.</li>
+</ol>
+
+<div class="box box-warn">
+  <span class="box-icon">⚠️</span>
+  <div>
+    PINs cannot be recovered. If a user forgets their PIN, delete their account and create a new one
+    with a new PIN.
+  </div>
+</div>
+
+<h3>Removing a User</h3>
+<p>Click the <strong>trash icon</strong> next to a user's name. They will immediately lose access to the system.</p>
+
+<h3>Lockout Status</h3>
+<p>
+  The Users page shows a status card for login security:
+</p>
+<ul>
+  <li><span class="badge badge-green">✓ No failed attempts</span> — everything is fine.</li>
+  <li><span class="badge badge-amber">⚠ N failed attempts</span> — someone entered a wrong PIN recently. The counter resets after a successful login.</li>
+  <li><span class="badge badge-red">🔒 System Locked</span> — 5 consecutive wrong PINs were entered. No one can sign in. Click <strong>Reset Lockout</strong> to unlock the system.</li>
+</ul>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     10. AUDIT LOG
+══════════════════════════════════════════════════════ -->
+<h2 id="audit-log">10. Audit Log</h2>
+
+<p>
+  The <strong>Audit Log</strong> is a record of every change made to inventory items and
+  purchase orders — who made it, when, and exactly what changed. It is read-only; entries
+  cannot be edited or deleted.
+</p>
+
+<h3>What Gets Logged</h3>
+<table>
+  <thead><tr><th>Action</th><th>What it records</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="badge badge-green">Created</span></td>
+      <td>A new item or purchase order was added. Shows all field values at the time of creation.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Updated</span></td>
+      <td>An existing item was edited. Shows only the fields that changed, with the old value → new value.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">Deleted</span></td>
+      <td>An item or purchase order was removed. Shows what the record contained before deletion.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Filtering the Log</h3>
+<p>Use the filter bar at the top to narrow down entries:</p>
+<ul>
+  <li><strong>Resource</strong> — show only Inventory Items or only Purchase Orders</li>
+  <li><strong>Action</strong> — show only Created, Updated, or Deleted entries</li>
+  <li><strong>User</strong> — show only changes made by a specific person</li>
+  <li><strong>Date range</strong> — pick a preset (Today, Last 7 days, This month, etc.) or enter custom From / To dates</li>
+</ul>
+<p>Click <strong>Clear filters</strong> to reset all filters at once. You can also click a user's name directly in a log entry to instantly filter by that user.</p>
+
+<h3>Exporting the Log</h3>
+<p>
+  Click <strong>Export CSV</strong> to download the current filtered view as a CSV file.
+  The file includes Timestamp, Resource, Action, Changed By, and a plain-text summary of the change.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     11. TIPS & FAQ
+══════════════════════════════════════════════════════ -->
+<h2 id="tips">11. Tips &amp; FAQ</h2>
+
+<h3>Frequently Asked Questions</h3>
+
+<h3 style="margin-top:16px">Q: The stock number looks wrong. How do I fix it?</h3>
+<p>
+  Stock is calculated from purchase orders minus charge-outs. Check the Purchase Orders and
+  Charge-Outs pages to find any entries that shouldn't be there and delete them.
+  Do <em>not</em> delete records just to adjust stock — this removes the historical record.
+  If stock is genuinely off due to a counting discrepancy, log a corrective purchase order
+  (positive adjustment) or a charge-out (negative adjustment) with a note explaining why.
+</p>
+
+<h3>Q: Can I edit a charge-out after saving it?</h3>
+<p>
+  Charge-outs cannot be edited directly. If an entry is wrong, delete it and re-enter it with
+  the correct information. The deletion and recreation will both appear in the Audit Log.
+</p>
+
+<h3>Q: What is a "custom" item in Purchase Orders?</h3>
+<p>
+  When logging a purchase, you can switch to <strong>Custom</strong> mode and type a free-form
+  item name. This is for one-off purchases that don't belong in the tracked inventory
+  (e.g. a single specialty cable). Check <strong>Add to inventory</strong> if you do want it
+  to appear in the item list and have its stock tracked going forward.
+</p>
+
+<h3>Q: I need to reorder something. Where do I find the part number?</h3>
+<p>
+  For toner, go to <strong>Inventory → Printer Toner</strong>, expand the relevant printer,
+  and the Part # column shows the part number recorded for each slot. For consumable items,
+  part numbers can be stored in the item's Description field.
+</p>
+
+<h3>Q: What does "GL Number" mean?</h3>
+<p>
+  GL stands for General Ledger. It's an accounting code that identifies which budget or cost
+  center gets charged when supplies are deployed to a department. Your finance team manages
+  these codes — make sure the GL number is correct when adding a department.
+</p>
+
+<h3>Q: How do I change my PIN?</h3>
+<p>
+  PINs cannot be changed after creation. Ask an administrator to delete your account and
+  create a new one with your preferred PIN.
+</p>
+
+<h3>Quick Reference — Navigation</h3>
+<div class="nav-grid">
+  <div class="nav-item">
+    <div class="nav-item-icon">📊</div>
+    <div class="nav-item-label">Dashboard</div>
+    <div class="nav-item-desc">Overview, alerts, quick charge-out</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">📦</div>
+    <div class="nav-item-label">Inventory</div>
+    <div class="nav-item-desc">Items + Printer Toner tabs</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">🏢</div>
+    <div class="nav-item-label">Departments</div>
+    <div class="nav-item-desc">Manage departments &amp; GL numbers</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">🛒</div>
+    <div class="nav-item-label">Purchase Orders</div>
+    <div class="nav-item-desc">Log incoming stock receipts</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">↔️</div>
+    <div class="nav-item-label">Charge-Outs</div>
+    <div class="nav-item-desc">Log deployments to departments</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">📈</div>
+    <div class="nav-item-label">Reports</div>
+    <div class="nav-item-desc">Monthly summaries &amp; CSV export</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">👥</div>
+    <div class="nav-item-label">Users</div>
+    <div class="nav-item-desc">Manage PINs &amp; lockout status</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">📋</div>
+    <div class="nav-item-label">Audit Log</div>
+    <div class="nav-item-desc">Track who changed what and when</div>
+  </div>
+</div>
+
+<div class="box box-tip" style="margin-top:28px">
+  <span class="box-icon">🖨️</span>
+  <div>
+    <strong>To save as PDF:</strong> Open this file in Chrome or Edge, press
+    <code>Ctrl+P</code> (Windows) or <code>⌘P</code> (Mac), set the destination to
+    <strong>Save as PDF</strong>, and click Save. The document is formatted to print cleanly.
+  </div>
+</div>
+
+<p style="margin-top:40px; font-size:12px; color:#9ca3af; text-align:center;">
+  GAH IT Inventory &nbsp;·&nbsp; GAH IT Department &nbsp;·&nbsp; For internal use only
+</p>
+
+</body>
+</html>
