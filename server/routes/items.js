@@ -20,23 +20,23 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { name, description, unit_price, reorder_threshold } = req.body;
+  const { name, description, unit_price, reorder_threshold, target_amount } = req.body;
   const changedBy = req.headers['x-changed-by'] || null;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
   const result = db.prepare(
-    'INSERT INTO items (name, description, unit_price, reorder_threshold) VALUES (?, ?, ?, ?)'
-  ).run(name, description || null, unit_price || 0, reorder_threshold || 0);
+    'INSERT INTO items (name, description, unit_price, reorder_threshold, target_amount) VALUES (?, ?, ?, ?, ?)'
+  ).run(name, description || null, unit_price || 0, reorder_threshold || 0, target_amount || 0);
 
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
   logAudit('items', item.id, 'CREATE', changedBy, null, {
-    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold,
+    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold, target_amount: item.target_amount,
   });
   res.status(201).json(item);
 });
 
 router.put('/:id', (req, res) => {
-  const { name, description, unit_price, reorder_threshold } = req.body;
+  const { name, description, unit_price, reorder_threshold, target_amount } = req.body;
   const changedBy = req.headers['x-changed-by'] || null;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
@@ -44,14 +44,14 @@ router.put('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'Item not found' });
 
   db.prepare(
-    'UPDATE items SET name = ?, description = ?, unit_price = ?, reorder_threshold = ? WHERE id = ?'
-  ).run(name, description || null, unit_price || 0, reorder_threshold || 0, req.params.id);
+    'UPDATE items SET name = ?, description = ?, unit_price = ?, reorder_threshold = ?, target_amount = ? WHERE id = ?'
+  ).run(name, description || null, unit_price || 0, reorder_threshold || 0, target_amount || 0, req.params.id);
 
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(req.params.id);
   logAudit('items', item.id, 'UPDATE', changedBy, {
-    name: existing.name, description: existing.description, unit_price: existing.unit_price, reorder_threshold: existing.reorder_threshold,
+    name: existing.name, description: existing.description, unit_price: existing.unit_price, reorder_threshold: existing.reorder_threshold, target_amount: existing.target_amount,
   }, {
-    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold,
+    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold, target_amount: item.target_amount,
   });
   res.json(item);
 });
@@ -63,7 +63,7 @@ router.delete('/:id', (req, res) => {
 
   db.prepare('DELETE FROM items WHERE id = ?').run(req.params.id);
   logAudit('items', item.id, 'DELETE', changedBy, {
-    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold,
+    name: item.name, description: item.description, unit_price: item.unit_price, reorder_threshold: item.reorder_threshold, target_amount: item.target_amount,
   }, null);
   res.json({ success: true });
 });

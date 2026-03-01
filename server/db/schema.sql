@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS items (
   description TEXT,
   unit_price REAL NOT NULL DEFAULT 0,
   reorder_threshold INTEGER NOT NULL DEFAULT 0,
+  target_amount INTEGER NOT NULL DEFAULT 0,
   is_custom INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS toner_cartridges (
   part_number       TEXT,
   brand             TEXT,
   notes             TEXT,
-  reorder_threshold INTEGER NOT NULL DEFAULT 0,
+  target_amount     INTEGER NOT NULL DEFAULT 0,
   created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

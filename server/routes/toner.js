@@ -55,7 +55,7 @@ router.get('/', (req, res) => {
 
 // POST /api/toner
 router.post('/', (req, res) => {
-  const { printer_id, slot, part_number, brand, notes, reorder_threshold } = req.body;
+  const { printer_id, slot, part_number, brand, notes, target_amount } = req.body;
   if (!printer_id || !slot) return res.status(400).json({ error: 'printer_id and slot are required' });
 
   const printer = db.prepare('SELECT * FROM printers WHERE id = ?').get(printer_id);
@@ -70,20 +70,20 @@ router.post('/', (req, res) => {
   if (duplicate) return res.status(409).json({ error: `A ${slot} cartridge already exists for this printer` });
 
   const result = db.prepare(
-    'INSERT INTO toner_cartridges (printer_id, slot, part_number, brand, notes, reorder_threshold) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(printer_id, slot, part_number || null, brand || null, notes || null, reorder_threshold || 0);
+    'INSERT INTO toner_cartridges (printer_id, slot, part_number, brand, notes, target_amount) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(printer_id, slot, part_number || null, brand || null, notes || null, target_amount || 0);
 
   res.status(201).json(withStock('WHERE tc.id = ?', [result.lastInsertRowid])[0]);
 });
 
 // PUT /api/toner/:id
 router.put('/:id', (req, res) => {
-  const { part_number, brand, notes, reorder_threshold } = req.body;
+  const { part_number, brand, notes, target_amount } = req.body;
   const existing = db.prepare('SELECT * FROM toner_cartridges WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Toner cartridge not found' });
 
-  db.prepare('UPDATE toner_cartridges SET part_number = ?, brand = ?, notes = ?, reorder_threshold = ? WHERE id = ?')
-    .run(part_number || null, brand || null, notes || null, reorder_threshold || 0, req.params.id);
+  db.prepare('UPDATE toner_cartridges SET part_number = ?, brand = ?, notes = ?, target_amount = ? WHERE id = ?')
+    .run(part_number || null, brand || null, notes || null, target_amount || 0, req.params.id);
 
   res.json(withStock('WHERE tc.id = ?', [req.params.id])[0]);
 });

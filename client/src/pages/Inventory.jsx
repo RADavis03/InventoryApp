@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 const today = () => new Date().toISOString().split('T')[0];
 
-const ITEM_EMPTY = { name: '', description: '', unit_price: '', reorder_threshold: '' };
+const ITEM_EMPTY = { name: '', description: '', unit_price: '', reorder_threshold: '', target_amount: '' };
 
 const SLOTS_COLOR = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK_DEVELOPER', 'COLOR_DEVELOPER', 'COLOR_DRUM', 'BLACK_DRUM', 'WASTE_TONER'];
 const SLOTS_BW    = ['BLACK', 'IMAGING_KIT'];
@@ -27,7 +27,7 @@ const SLOT_STYLE = {
 };
 
 const PRINTER_EMPTY  = { model_name: '', is_color: false, notes: '' };
-const TONER_EMPTY    = { printer_id: '', slot: 'BLACK', part_number: '', brand: '', notes: '', reorder_threshold: '' };
+const TONER_EMPTY    = { printer_id: '', slot: 'BLACK', part_number: '', brand: '', notes: '', target_amount: '' };
 const RESTOCK_EMPTY  = { quantity: '', notes: '', received_at: today() };
 
 export default function Inventory() {
@@ -55,7 +55,7 @@ export default function Inventory() {
   const openAddItem = () => { setEditItem(null); setItemForm(ITEM_EMPTY); setItemError(''); setShowItemModal(true); };
   const openEditItem = (item) => {
     setEditItem(item);
-    setItemForm({ name: item.name, description: item.description || '', unit_price: item.unit_price, reorder_threshold: item.reorder_threshold });
+    setItemForm({ name: item.name, description: item.description || '', unit_price: item.unit_price, reorder_threshold: item.reorder_threshold, target_amount: item.target_amount });
     setItemError('');
     setShowItemModal(true);
   };
@@ -172,7 +172,7 @@ export default function Inventory() {
 
   const openEditToner = (t) => {
     setEditToner(t);
-    setTonerForm({ printer_id: t.printer_id, slot: t.slot, part_number: t.part_number || '', brand: t.brand || '', notes: t.notes || '', reorder_threshold: t.reorder_threshold });
+    setTonerForm({ printer_id: t.printer_id, slot: t.slot, part_number: t.part_number || '', brand: t.brand || '', notes: t.notes || '', target_amount: t.target_amount });
     setTonerError('');
     setShowTonerModal(true);
   };
@@ -327,6 +327,7 @@ export default function Inventory() {
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</th>
                   <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit Price</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Reorder At</th>
+                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Target Amt</th>
                   <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
@@ -349,6 +350,7 @@ export default function Inventory() {
                       </td>
                       <td className="px-5 py-3.5 text-right font-medium text-gray-900">{fmt(item.unit_price)}</td>
                       <td className="px-5 py-3.5 text-center text-gray-500">{item.reorder_threshold}</td>
+                      <td className="px-5 py-3.5 text-center text-gray-500">{item.target_amount || '—'}</td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => openEditItem(item)} className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"><Pencil size={15} /></button>
@@ -436,7 +438,7 @@ export default function Inventory() {
                         <>
                           <span className="text-xs text-gray-400">{cartridges.length} slot{cartridges.length !== 1 ? 's' : ''}</span>
                           {(() => {
-                            const lowCount = cartridges.filter(t => t.stock < t.reorder_threshold).length;
+                            const lowCount = cartridges.filter(t => t.stock < t.target_amount).length;
                             return lowCount > 0 ? (
                               <span className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
                                 <AlertTriangle size={11} />
@@ -475,7 +477,7 @@ export default function Inventory() {
                           <th className="text-left px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Part #</th>
                           <th className="text-left px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Brand</th>
                           <th className="text-center px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Stock</th>
-                          <th className="text-center px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Reorder At</th>
+                          <th className="text-center px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Target Amt</th>
                           <th className="text-left px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Notes</th>
                           <th className="text-right px-5 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
                         </tr>
@@ -483,7 +485,7 @@ export default function Inventory() {
                       <tbody className="divide-y divide-gray-50">
                         {cartridges.map(t => {
                           const style = SLOT_STYLE[t.slot] || SLOT_STYLE.BLACK;
-                          const low = t.stock < t.reorder_threshold;
+                          const low = t.stock < t.target_amount;
                           return (
                             <tr key={t.id} className={`hover:bg-gray-50/50 ${low ? 'bg-red-50/30' : ''}`}>
                               <td className="px-5 py-3">
@@ -519,7 +521,7 @@ export default function Inventory() {
                                   </button>
                                 </div>
                               </td>
-                              <td className="px-5 py-3 text-center text-gray-500 text-sm">{t.reorder_threshold}</td>
+                              <td className="px-5 py-3 text-center text-gray-500 text-sm">{t.target_amount || '—'}</td>
                               <td className="px-5 py-3 text-gray-500 text-xs max-w-[200px] truncate">{t.notes || <span className="text-gray-300">—</span>}</td>
                               <td className="px-5 py-3 text-right">
                                 <div className="flex items-center justify-end gap-1">
@@ -558,7 +560,7 @@ export default function Inventory() {
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 value={itemForm.description} onChange={setItem('description')} placeholder="Optional details" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Unit Price ($)</label>
                 <input type="number" min="0" step="0.01"
@@ -566,10 +568,16 @@ export default function Inventory() {
                   value={itemForm.unit_price} onChange={setItem('unit_price')} placeholder="0.00" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Reorder Threshold</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Reorder At</label>
                 <input type="number" min="0" step="1"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={itemForm.reorder_threshold} onChange={setItem('reorder_threshold')} placeholder="5" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Target Amount</label>
+                <input type="number" min="0" step="1"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={itemForm.target_amount} onChange={setItem('target_amount')} placeholder="20" />
               </div>
             </div>
             {itemError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{itemError}</p>}
@@ -679,10 +687,10 @@ export default function Inventory() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Reorder Threshold</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Target Amount</label>
                 <input type="number" min="0" step="1"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={tonerForm.reorder_threshold} onChange={setTonerF('reorder_threshold')} placeholder="2" />
+                  value={tonerForm.target_amount} onChange={setTonerF('target_amount')} placeholder="2" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>

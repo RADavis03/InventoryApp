@@ -81,7 +81,7 @@ export default function Reports() {
         setLowItemsAt(fmtNow());
       } else if (reportType === 'lowToner') {
         const all = await api.toner.list();
-        setLowToner(all.filter(t => t.stock < t.reorder_threshold));
+        setLowToner(all.filter(t => t.stock < t.target_amount));
         setLowTonerAt(fmtNow());
       }
     } catch (err) {
@@ -99,14 +99,14 @@ export default function Reports() {
     } else if (reportType === 'lowItems' && lowItems) {
       downloadCsv(
         `low-items-${new Date().toISOString().slice(0,10)}.csv`,
-        ['Item Name', 'Description', 'Current Stock', 'Reorder Threshold', 'Need to Order'],
-        lowItems.map(i => [i.name, i.description || '', i.stock, i.reorder_threshold, Math.max(0, i.reorder_threshold - i.stock)])
+        ['Item Name', 'Description', 'Current Stock', 'Reorder At', 'Target Amount', 'Need to Order'],
+        lowItems.map(i => [i.name, i.description || '', i.stock, i.reorder_threshold, i.target_amount || '', Math.max(0, (i.target_amount || i.reorder_threshold) - i.stock)])
       );
     } else if (reportType === 'lowToner' && lowToner) {
       downloadCsv(
         `low-toner-${new Date().toISOString().slice(0,10)}.csv`,
-        ['Printer Model', 'Slot', 'Part Number', 'Brand', 'Current Stock', 'Reorder Threshold', 'Need to Order'],
-        lowToner.map(t => [t.printer_model, SLOT_STYLE[t.slot]?.label || t.slot, t.part_number || '', t.brand || '', t.stock, t.reorder_threshold, Math.max(0, t.reorder_threshold - t.stock)])
+        ['Printer Model', 'Slot', 'Part Number', 'Brand', 'Current Stock', 'Target Amount', 'Need to Order'],
+        lowToner.map(t => [t.printer_model, SLOT_STYLE[t.slot]?.label || t.slot, t.part_number || '', t.brand || '', t.stock, t.target_amount, Math.max(0, t.target_amount - t.stock)])
       );
     }
   };
@@ -385,7 +385,7 @@ export default function Reports() {
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Units to Order</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
-                {lowItems.reduce((s, i) => s + Math.max(0, i.reorder_threshold - i.stock), 0)}
+                {lowItems.reduce((s, i) => s + Math.max(0, (i.target_amount || i.reorder_threshold) - i.stock), 0)}
               </p>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
@@ -410,7 +410,8 @@ export default function Reports() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Item</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Description</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Current Stock</th>
-                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Threshold</th>
+                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Reorder At</th>
+                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Target Amt</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Need to Order</th>
                 </tr>
               </thead>
@@ -425,9 +426,10 @@ export default function Reports() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-center text-gray-500">{item.reorder_threshold}</td>
+                    <td className="px-5 py-3.5 text-center text-gray-500">{item.target_amount || '—'}</td>
                     <td className="px-5 py-3.5 text-center">
                       <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                        {Math.max(0, item.reorder_threshold - item.stock)}
+                        {Math.max(0, (item.target_amount || item.reorder_threshold) - item.stock)}
                       </span>
                     </td>
                   </tr>
@@ -449,7 +451,7 @@ export default function Reports() {
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Units to Order</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
-                {lowToner.reduce((s, t) => s + Math.max(0, t.reorder_threshold - t.stock), 0)}
+                {lowToner.reduce((s, t) => s + Math.max(0, t.target_amount - t.stock), 0)}
               </p>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
@@ -476,7 +478,7 @@ export default function Reports() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Part #</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Brand</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Current Stock</th>
-                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Threshold</th>
+                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Target Amt</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Need to Order</th>
                 </tr>
               </thead>
@@ -499,10 +501,10 @@ export default function Reports() {
                           {t.stock}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-center text-gray-500">{t.reorder_threshold}</td>
+                      <td className="px-5 py-3.5 text-center text-gray-500">{t.target_amount}</td>
                       <td className="px-5 py-3.5 text-center">
                         <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                          {Math.max(0, t.reorder_threshold - t.stock)}
+                          {Math.max(0, t.target_amount - t.stock)}
                         </span>
                       </td>
                     </tr>
