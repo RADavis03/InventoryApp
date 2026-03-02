@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { logAudit } = require('../lib/audit');
 
 router.get('/', (req, res) => {
   const printers = db.prepare(`
@@ -20,7 +21,9 @@ router.post('/', (req, res) => {
     'INSERT INTO printers (model_name, is_color, notes) VALUES (?, ?, ?)'
   ).run(model_name, is_color ? 1 : 0, notes || null);
 
-  res.status(201).json(db.prepare('SELECT * FROM printers WHERE id = ?').get(result.lastInsertRowid));
+  const created = db.prepare('SELECT * FROM printers WHERE id = ?').get(result.lastInsertRowid);
+  logAudit('printers', result.lastInsertRowid, 'CREATE', req.headers['x-changed-by'], null, created);
+  res.status(201).json(created);
 });
 
 router.put('/:id', (req, res) => {
@@ -33,7 +36,9 @@ router.put('/:id', (req, res) => {
   db.prepare('UPDATE printers SET model_name = ?, is_color = ?, notes = ? WHERE id = ?')
     .run(model_name, is_color ? 1 : 0, notes || null, req.params.id);
 
-  res.json(db.prepare('SELECT * FROM printers WHERE id = ?').get(req.params.id));
+  const updated = db.prepare('SELECT * FROM printers WHERE id = ?').get(req.params.id);
+  logAudit('printers', req.params.id, 'UPDATE', req.headers['x-changed-by'], existing, updated);
+  res.json(updated);
 });
 
 router.delete('/:id', (req, res) => {
@@ -41,6 +46,7 @@ router.delete('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'Printer not found' });
 
   db.prepare('DELETE FROM printers WHERE id = ?').run(req.params.id);
+  logAudit('printers', req.params.id, 'DELETE', req.headers['x-changed-by'], existing, null);
   res.json({ success: true });
 });
 

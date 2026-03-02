@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { logAudit } = require('../lib/audit');
 
 const BW_SLOTS    = ['BLACK', 'IMAGING_KIT', 'BLACK_DRUM'];
 const COLOR_SLOTS = ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK_DEVELOPER', 'COLOR_DEVELOPER', 'COLOR_DRUM', 'BLACK_DRUM', 'WASTE_TONER'];
@@ -73,7 +74,9 @@ router.post('/', (req, res) => {
     'INSERT INTO toner_cartridges (printer_id, slot, part_number, brand, notes, target_amount) VALUES (?, ?, ?, ?, ?, ?)'
   ).run(printer_id, slot, part_number || null, brand || null, notes || null, target_amount || 0);
 
-  res.status(201).json(withStock('WHERE tc.id = ?', [result.lastInsertRowid])[0]);
+  const created = withStock('WHERE tc.id = ?', [result.lastInsertRowid])[0];
+  logAudit('toner_cartridges', result.lastInsertRowid, 'CREATE', req.headers['x-changed-by'], null, created);
+  res.status(201).json(created);
 });
 
 // PUT /api/toner/:id
@@ -85,7 +88,9 @@ router.put('/:id', (req, res) => {
   db.prepare('UPDATE toner_cartridges SET part_number = ?, brand = ?, notes = ?, target_amount = ? WHERE id = ?')
     .run(part_number || null, brand || null, notes || null, target_amount || 0, req.params.id);
 
-  res.json(withStock('WHERE tc.id = ?', [req.params.id])[0]);
+  const updated = withStock('WHERE tc.id = ?', [req.params.id])[0];
+  logAudit('toner_cartridges', req.params.id, 'UPDATE', req.headers['x-changed-by'], existing, updated);
+  res.json(updated);
 });
 
 // DELETE /api/toner/:id
@@ -94,6 +99,7 @@ router.delete('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'Toner cartridge not found' });
 
   db.prepare('DELETE FROM toner_cartridges WHERE id = ?').run(req.params.id);
+  logAudit('toner_cartridges', req.params.id, 'DELETE', req.headers['x-changed-by'], existing, null);
   res.json({ success: true });
 });
 
@@ -106,9 +112,18 @@ router.post('/:id/restock', (req, res) => {
   const existing = db.prepare('SELECT * FROM toner_cartridges WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Toner cartridge not found' });
 
-  db.prepare('INSERT INTO toner_restocks (toner_id, quantity, notes, received_at) VALUES (?, ?, ?, ?)')
+  const restock = db.prepare('INSERT INTO toner_restocks (toner_id, quantity, notes, received_at) VALUES (?, ?, ?, ?)')
     .run(req.params.id, parseInt(quantity), notes || null, received_at);
 
+  logAudit('toner_restocks', restock.lastInsertRowid, 'CREATE', req.headers['x-changed-by'], null, {
+    toner_id: parseInt(req.params.id),
+    part_number: existing.part_number,
+    printer_id: existing.printer_id,
+    slot: existing.slot,
+    quantity: parseInt(quantity),
+    notes: notes || null,
+    received_at,
+  });
   res.status(201).json(withStock('WHERE tc.id = ?', [req.params.id])[0]);
 });
 

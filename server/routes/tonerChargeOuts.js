@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { logAudit } = require('../lib/audit');
 
 const enrichedSelect = `
   SELECT
@@ -48,15 +49,17 @@ router.post('/', (req, res) => {
   ).run(toner_id, department_id, parseInt(quantity), charged_by, ticket_number || null, notes || null, charged_at);
 
   const created = db.prepare(enrichedSelect + ' WHERE tco.id = ?').get(result.lastInsertRowid);
+  logAudit('toner_charge_outs', result.lastInsertRowid, 'CREATE', req.headers['x-changed-by'], null, created);
   res.status(201).json(created);
 });
 
 // DELETE /api/toner-charge-outs/:id
 router.delete('/:id', (req, res) => {
-  const existing = db.prepare('SELECT id FROM toner_charge_outs WHERE id = ?').get(req.params.id);
+  const existing = db.prepare(enrichedSelect + ' WHERE tco.id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Toner charge-out not found' });
 
   db.prepare('DELETE FROM toner_charge_outs WHERE id = ?').run(req.params.id);
+  logAudit('toner_charge_outs', req.params.id, 'DELETE', req.headers['x-changed-by'], existing, null);
   res.json({ success: true });
 });
 

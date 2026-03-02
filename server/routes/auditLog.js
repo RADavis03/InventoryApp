@@ -68,7 +68,15 @@ router.get('/csv', (req, res) => {
     return '';
   };
 
-  const TABLE_LABEL = { items: 'Inventory Item', purchase_orders: 'Purchase Order' };
+  const TABLE_LABEL = {
+    items:             'Inventory Item',
+    purchase_orders:   'Purchase Order',
+    charge_outs:       'Charge-Out',
+    printers:          'Printer',
+    toner_cartridges:  'Toner Cartridge',
+    toner_restocks:    'Toner Restock',
+    toner_charge_outs: 'Toner Charge-Out',
+  };
   const ACTION_LABEL = { CREATE: 'Created', UPDATE: 'Updated', DELETE: 'Deleted' };
 
   const headers = ['Timestamp', 'Resource', 'Action', 'Changed By', 'Summary'];

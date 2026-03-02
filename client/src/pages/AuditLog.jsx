@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardList, Package, ShoppingCart, Download } from 'lucide-react';
+import { ClipboardList, Package, ShoppingCart, Download, Printer, Truck } from 'lucide-react';
 import * as api from '../lib/api.js';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
@@ -16,8 +16,13 @@ const ACTION_STYLE = {
 };
 
 const TABLE_LABEL = {
-  items:           { label: 'Inventory Item', Icon: Package },
-  purchase_orders: { label: 'Purchase Order', Icon: ShoppingCart },
+  items:             { label: 'Inventory Item',   Icon: Package },
+  purchase_orders:   { label: 'Purchase Order',   Icon: ShoppingCart },
+  charge_outs:       { label: 'Charge-Out',       Icon: Truck },
+  printers:          { label: 'Printer',           Icon: Printer },
+  toner_cartridges:  { label: 'Toner Cartridge',  Icon: Printer },
+  toner_restocks:    { label: 'Toner Restock',    Icon: Package },
+  toner_charge_outs: { label: 'Toner Charge-Out', Icon: Truck },
 };
 
 function ValuePill({ label, value }) {
@@ -172,6 +177,11 @@ export default function AuditLog() {
           <option value="">All resources</option>
           <option value="items">Inventory Items</option>
           <option value="purchase_orders">Purchase Orders</option>
+          <option value="charge_outs">Charge-Outs</option>
+          <option value="printers">Printers</option>
+          <option value="toner_cartridges">Toner Cartridges</option>
+          <option value="toner_restocks">Toner Restocks</option>
+          <option value="toner_charge_outs">Toner Charge-Outs</option>
         </select>
 
         <select
@@ -242,7 +252,7 @@ export default function AuditLog() {
           <div className="py-16 text-center">
             <ClipboardList className="mx-auto text-gray-300 mb-3" size={40} />
             <p className="text-gray-500 font-medium">No audit entries yet</p>
-            <p className="text-gray-400 text-sm mt-1">Changes to inventory items and purchase orders will appear here</p>
+            <p className="text-gray-400 text-sm mt-1">Changes to inventory items, purchase orders, and toner inventory will appear here</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">

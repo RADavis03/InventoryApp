@@ -295,7 +295,7 @@ export default function Reports() {
                       <td className="px-5 py-3 text-gray-600">{row.charged_by}</td>
                       <td className="px-5 py-3">
                         {row.ticket_number
-                          ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{row.ticket_number}</span>
+                          ? <a href={`https://k1000.gibsonhospital.org/adminui/ticket.php?ID=${row.ticket_number}`} target="_blank" rel="noreferrer" className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded hover:bg-brand-100 hover:underline">{row.ticket_number}</a>
                           : <span className="text-gray-400">—</span>}
                       </td>
                     </tr>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { logAudit } = require('../lib/audit');
 
 router.get('/', (req, res) => {
   const { item_id, department_id, month, year } = req.query;
@@ -56,6 +57,7 @@ router.post('/', (req, res) => {
     WHERE co.id = ?
   `).get(result.lastInsertRowid);
 
+  logAudit('charge_outs', result.lastInsertRowid, 'CREATE', req.headers['x-changed-by'], null, chargeOut);
   res.status(201).json(chargeOut);
 });
 
@@ -64,6 +66,7 @@ router.delete('/:id', (req, res) => {
   if (!chargeOut) return res.status(404).json({ error: 'Charge-out not found' });
 
   db.prepare('DELETE FROM charge_outs WHERE id = ?').run(req.params.id);
+  logAudit('charge_outs', req.params.id, 'DELETE', req.headers['x-changed-by'], chargeOut, null);
   res.json({ success: true });
 });
 

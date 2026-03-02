@@ -311,7 +311,7 @@ export default function ChargeOuts() {
                       <td className="px-5 py-3.5 text-right font-semibold text-gray-900">{fmt(co.quantity * co.unit_cost)}</td>
                       <td className="px-5 py-3.5 text-gray-600">{co.charged_by}</td>
                       <td className="px-5 py-3.5">
-                        {co.ticket_number ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{co.ticket_number}</span> : <span className="text-gray-400">—</span>}
+                        {co.ticket_number ? <a href={`https://k1000.gibsonhospital.org/adminui/ticket.php?ID=${co.ticket_number}`} target="_blank" rel="noreferrer" className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded hover:bg-brand-100 hover:underline">{co.ticket_number}</a> : <span className="text-gray-400">—</span>}
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <button onClick={() => setDeleteConfirm(co)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
@@ -411,7 +411,7 @@ export default function ChargeOuts() {
                       <td className="px-5 py-3.5 text-center text-gray-900">{t.quantity}</td>
                       <td className="px-5 py-3.5 text-gray-600">{t.charged_by}</td>
                       <td className="px-5 py-3.5">
-                        {t.ticket_number ? <span className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded">{t.ticket_number}</span> : <span className="text-gray-400">—</span>}
+                        {t.ticket_number ? <a href={`https://k1000.gibsonhospital.org/adminui/ticket.php?ID=${t.ticket_number}`} target="_blank" rel="noreferrer" className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded hover:bg-brand-100 hover:underline">{t.ticket_number}</a> : <span className="text-gray-400">—</span>}
                       </td>
                       <td className="px-5 py-3.5 text-gray-500">{t.notes || <span className="text-gray-300">—</span>}</td>
                       <td className="px-5 py-3.5 text-right">
