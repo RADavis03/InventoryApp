@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardList, Package, ShoppingCart, Download, Printer, Truck } from 'lucide-react';
+import { ClipboardList, Package, ShoppingCart, Download, Printer, Truck, Laptop } from 'lucide-react';
 import * as api from '../lib/api.js';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
@@ -23,6 +23,7 @@ const TABLE_LABEL = {
   toner_cartridges:  { label: 'Toner Cartridge',  Icon: Printer },
   toner_restocks:    { label: 'Toner Restock',    Icon: Package },
   toner_charge_outs: { label: 'Toner Charge-Out', Icon: Truck },
+  loaners:           { label: 'Loaner',           Icon: Laptop },
 };
 
 function ValuePill({ label, value }) {
@@ -182,6 +183,7 @@ export default function AuditLog() {
           <option value="toner_cartridges">Toner Cartridges</option>
           <option value="toner_restocks">Toner Restocks</option>
           <option value="toner_charge_outs">Toner Charge-Outs</option>
+          <option value="loaners">Loaners</option>
         </select>
 
         <select

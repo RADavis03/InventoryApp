@@ -105,6 +105,28 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS loaner_computers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS loaners (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  computer_id INTEGER NOT NULL REFERENCES loaner_computers(id) ON DELETE RESTRICT,
+  department_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE RESTRICT,
+  person_name TEXT NOT NULL,
+  ticket_number TEXT,
+  loaned_date TEXT NOT NULL,
+  due_date TEXT NOT NULL,
+  returned_date TEXT,
+  returned_by TEXT,
+  notes TEXT,
+  created_by TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS gl_swaps (
   id                 INTEGER PRIMARY KEY AUTOINCREMENT,
   purchase_order_id  INTEGER NOT NULL REFERENCES purchase_orders(id) ON DELETE RESTRICT,

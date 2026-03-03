@@ -11,6 +11,7 @@ import {
   LogOut,
   ClipboardList,
   BookOpen,
+  Laptop,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
@@ -20,6 +21,7 @@ const navItems = [
   { to: '/departments', icon: Building2, label: 'Departments' },
   { to: '/purchase-orders', icon: ShoppingCart, label: 'Purchase Orders' },
   { to: '/charge-outs', icon: ArrowRightLeft, label: 'Charge-Outs' },
+  { to: '/loaners', icon: Laptop, label: 'Loaners' },
   { to: '/reports', icon: FileBarChart2, label: 'Reports' },
   { to: '/users', icon: Users, label: 'Users' },
   { to: '/audit-log', icon: ClipboardList, label: 'Audit Log' },

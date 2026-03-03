@@ -10,6 +10,7 @@ import ChargeOuts from './pages/ChargeOuts.jsx';
 import Reports from './pages/Reports.jsx';
 import Users from './pages/Users.jsx';
 import AuditLog from './pages/AuditLog.jsx';
+import Loaners from './pages/Loaners.jsx';
 
 function ProtectedRoute() {
   const { currentUser, hasUsers, loading } = useAuth();
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="users" element={<Users />} />
               <Route path="audit-log" element={<AuditLog />} />
+              <Route path="loaners" element={<Loaners />} />
             </Route>
           </Route>
         </Routes>

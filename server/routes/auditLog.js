@@ -76,6 +76,7 @@ router.get('/csv', (req, res) => {
     toner_cartridges:  'Toner Cartridge',
     toner_restocks:    'Toner Restock',
     toner_charge_outs: 'Toner Charge-Out',
+    loaners:           'Loaner',
   };
   const ACTION_LABEL = { CREATE: 'Created', UPDATE: 'Updated', DELETE: 'Deleted' };
 

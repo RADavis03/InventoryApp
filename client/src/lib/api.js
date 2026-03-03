@@ -90,6 +90,21 @@ export const reports = {
   csvUrl: (month, year) => `${BASE}/reports/monthly/csv?month=${month}&year=${year}`,
 };
 
+export const loanerComputers = {
+  list: () => request('GET', '/loaner-computers'),
+  create: (data) => request('POST', '/loaner-computers', data),
+  update: (id, data) => request('PUT', `/loaner-computers/${id}`, data),
+  remove: (id) => request('DELETE', `/loaner-computers/${id}`),
+};
+
+export const loaners = {
+  list: (params) => request('GET', `/loaners${params ? '?' + new URLSearchParams(params) : ''}`),
+  create: (data) => request('POST', '/loaners', data),
+  update: (id, data) => request('PUT', `/loaners/${id}`, data),
+  logReturn: (id, data) => request('PUT', `/loaners/${id}/return`, data),
+  remove: (id) => request('DELETE', `/loaners/${id}`),
+};
+
 export const auditLog = {
   list:    (params) => request('GET', `/audit-log${params ? '?' + new URLSearchParams(params) : ''}`),
   users:   ()       => request('GET', '/audit-log/users'),

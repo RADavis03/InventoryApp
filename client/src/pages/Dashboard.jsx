@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus, Printer } from 'lucide-react';
+import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus, Printer, Laptop } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -28,6 +28,7 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
     red: 'bg-red-50 text-red-600',
     green: 'bg-green-50 text-green-600',
     purple: 'bg-purple-50 text-purple-600',
+    yellow: 'bg-amber-50 text-amber-600',
   };
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const [recentChargeOuts, setRecentChargeOuts] = useState([]);
   const [monthCoCount, setMonthCoCount] = useState(0);
   const [monthTotal, setMonthTotal] = useState(0);
+  const [activeLoaners, setActiveLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCoModal, setShowCoModal] = useState(false);
   const [coForm, setCoForm] = useState(emptyCoForm);
@@ -69,7 +71,8 @@ export default function Dashboard() {
       api.chargeOuts.list({ month: now.getMonth() + 1, year: now.getFullYear() }),
       api.departments.list(),
       api.toner.list(),
-    ]).then(([its, cos, depts, tons]) => {
+      api.loaners.list({ status: 'active' }),
+    ]).then(([its, cos, depts, tons, loans]) => {
       setItemsList(its);
       setTonerList(tons);
       setDepartments(depts);
@@ -77,6 +80,7 @@ export default function Dashboard() {
       setRecentChargeOuts(sorted);
       setMonthCoCount(cos.length);
       setMonthTotal(cos.reduce((sum, c) => sum + c.quantity * c.unit_cost, 0));
+      setActiveLoaners(loans);
     }).finally(() => setLoading(false));
   };
 
@@ -124,6 +128,18 @@ export default function Dashboard() {
   const lowTonerItems = tonerList.filter(t => t.stock < t.reorder_threshold);
   const monthName = now.toLocaleString('en-US', { month: 'long' });
 
+  const loanerStatusOf = (due_date) => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const due = new Date(due_date + 'T00:00:00');
+    const days = Math.ceil((due - d) / (1000 * 60 * 60 * 24));
+    return days < 0 ? 'overdue' : days <= 3 ? 'due_soon' : 'ok';
+  };
+  const overdueLoaners = activeLoaners.filter(l => loanerStatusOf(l.due_date) === 'overdue');
+  const dueSoonLoaners = activeLoaners.filter(l => loanerStatusOf(l.due_date) === 'due_soon');
+  const loanerCardColor = overdueLoaners.length > 0 ? 'red' : dueSoonLoaners.length > 0 ? 'yellow' : 'blue';
+  const warnedLoaners = [...overdueLoaners, ...dueSoonLoaners];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -148,16 +164,53 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-5 gap-5 mb-8">
         <StatCard icon={Package} label="Total Items" value={itemsList.length} color="blue" sub="in catalog" />
         <StatCard icon={AlertTriangle} label="Low Stock" value={lowStockItems.length} color="red" sub="at or below threshold" />
         <Link to="/charge-outs" className="block hover:opacity-80 transition-opacity">
           <StatCard icon={ArrowRightLeft} label={`${monthName} Transactions`} value={monthCoCount} color="purple" sub="charge-outs this month" />
         </Link>
         <StatCard icon={DollarSign} label={`${monthName} Total`} value={fmt(monthTotal)} color="green" sub="charged out this month" />
+        <Link to="/loaners" className="block hover:opacity-80 transition-opacity">
+          <StatCard icon={Laptop} label="Active Loaners" value={activeLoaners.length} color={loanerCardColor} sub={overdueLoaners.length > 0 ? `${overdueLoaners.length} overdue` : dueSoonLoaners.length > 0 ? `${dueSoonLoaners.length} due soon` : 'all on schedule'} />
+        </Link>
       </div>
 
       <div className="grid grid-cols-4 gap-6">
+        {/* Loaner Warnings */}
+        {warnedLoaners.length > 0 && (
+          <div className="col-span-4 bg-white rounded-xl border border-amber-100 shadow-sm">
+            <div className="px-5 py-4 border-b border-amber-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Laptop size={15} className="text-amber-500" />
+                <h2 className="font-semibold text-gray-900">Loaner Alerts</h2>
+              </div>
+              <Link to="/loaners" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5">
+                View all <ChevronRight size={13} />
+              </Link>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {warnedLoaners.map(l => {
+                const isOverdue = loanerStatusOf(l.due_date) === 'overdue';
+                return (
+                  <div key={l.id} className="px-5 py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{l.computer_name} — {l.person_name}</p>
+                      <p className="text-xs text-gray-400">{l.department_name}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {isOverdue ? 'Overdue' : 'Due Soon'}
+                      </span>
+                      <p className="text-xs text-gray-400 mt-0.5">Due {new Date(l.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Low Stock Alerts — Consumables */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">

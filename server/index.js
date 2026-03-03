@@ -19,6 +19,8 @@ app.use('/api/toner', require('./routes/toner'));
 app.use('/api/toner-charge-outs', require('./routes/tonerChargeOuts'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/audit-log', require('./routes/auditLog'));
+app.use('/api/loaner-computers', require('./routes/loanerComputers'));
+app.use('/api/loaners', require('./routes/loaners'));
 
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../client/dist');
