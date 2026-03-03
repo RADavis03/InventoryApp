@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Plus, Trash2, ArrowRightLeft, Download, Printer } from 'lucide-react';
+import { useEffect, useState, Fragment } from 'react';
+import { Plus, Trash2, ArrowRightLeft, Download, Printer, StickyNote } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -73,6 +73,7 @@ export default function ChargeOuts() {
   const [form,           setForm]           = useState(emptyForm);
   const [error,          setError]          = useState('');
   const [deleteConfirm,  setDeleteConfirm]  = useState(null);
+  const [expandedCoNote, setExpandedCoNote] = useState(null);
 
   const load = () => {
     if (chargeOuts.length === 0) setLoading(true);
@@ -301,22 +302,44 @@ export default function ChargeOuts() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {chargeOuts.map(co => (
-                    <tr key={co.id} className="hover:bg-gray-50/50">
-                      <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">{fmtDate(co.charged_at)}</td>
-                      <td className="px-5 py-3.5 font-medium text-gray-900">{co.item_name}</td>
-                      <td className="px-5 py-3.5 text-gray-700">{co.department_name}</td>
-                      <td className="px-5 py-3.5"><span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{co.gl_number}</span></td>
-                      <td className="px-5 py-3.5 text-center text-gray-900">{co.quantity}</td>
-                      <td className="px-5 py-3.5 text-right text-gray-700">{fmt(co.unit_cost)}</td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-gray-900">{fmt(co.quantity * co.unit_cost)}</td>
-                      <td className="px-5 py-3.5 text-gray-600">{co.charged_by}</td>
-                      <td className="px-5 py-3.5">
-                        {co.ticket_number ? <a href={`https://k1000.gibsonhospital.org/adminui/ticket.php?ID=${co.ticket_number}`} target="_blank" rel="noreferrer" className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded hover:bg-brand-100 hover:underline">{co.ticket_number}</a> : <span className="text-gray-400">—</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <button onClick={() => setDeleteConfirm(co)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
-                      </td>
-                    </tr>
+                    <Fragment key={co.id}>
+                      <tr
+                        className={`hover:bg-gray-50/50 transition-colors ${co.notes ? 'cursor-pointer' : ''}`}
+                        onClick={() => co.notes && setExpandedCoNote(expandedCoNote === co.id ? null : co.id)}
+                      >
+                        <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">{fmtDate(co.charged_at)}</td>
+                        <td className="px-5 py-3.5 font-medium text-gray-900">
+                          <div className="flex items-center gap-2">
+                            {co.item_name}
+                            {co.notes && (
+                              <StickyNote size={13} fill="currentColor" className={`flex-shrink-0 transition-colors ${expandedCoNote === co.id ? 'text-yellow-400' : 'text-yellow-200'}`} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3.5 text-gray-700">{co.department_name}</td>
+                        <td className="px-5 py-3.5"><span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{co.gl_number}</span></td>
+                        <td className="px-5 py-3.5 text-center text-gray-900">{co.quantity}</td>
+                        <td className="px-5 py-3.5 text-right text-gray-700">{fmt(co.unit_cost)}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-gray-900">{fmt(co.quantity * co.unit_cost)}</td>
+                        <td className="px-5 py-3.5 text-gray-600">{co.charged_by}</td>
+                        <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
+                          {co.ticket_number ? <a href={`https://k1000.gibsonhospital.org/adminui/ticket.php?ID=${co.ticket_number}`} target="_blank" rel="noreferrer" className="font-mono text-xs bg-brand-50 text-brand-700 px-2 py-0.5 rounded hover:bg-brand-100 hover:underline">{co.ticket_number}</a> : <span className="text-gray-400">—</span>}
+                        </td>
+                        <td className="px-5 py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                          <button onClick={() => setDeleteConfirm(co)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        </td>
+                      </tr>
+                      {expandedCoNote === co.id && co.notes && (
+                        <tr className="bg-yellow-50/60">
+                          <td colSpan={10} className="px-5 py-2.5">
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <StickyNote size={14} fill="currentColor" className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                              <span>{co.notes}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Laptop, Plus, RotateCcw, Trash2, Pencil } from 'lucide-react';
+import { useEffect, useState, Fragment } from 'react';
+import { Laptop, Plus, RotateCcw, Trash2, Pencil, StickyNote } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -47,6 +47,8 @@ const TABS = ['Active Loaners', 'Loaner History', 'Manage Computers'];
 export default function Loaners() {
   const { currentUser } = useAuth();
   const [tab, setTab] = useState(0);
+  const [expandedNote, setExpandedNote] = useState(null);
+  const [expandedHistoryNote, setExpandedHistoryNote] = useState(null);
 
   // Data
   const [activeLoaners, setActiveLoaners] = useState([]);
@@ -316,32 +318,54 @@ export default function Loaners() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {activeLoaners.map(l => (
-                    <tr key={l.id} className="hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{l.computer_name}</td>
-                      <td className="px-5 py-3 text-gray-700">{l.person_name}</td>
-                      <td className="px-5 py-3 text-gray-600">{l.department_name}</td>
-                      <td className="px-5 py-3"><TicketLink ticket_number={l.ticket_number} /></td>
-                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.loaned_date)}</td>
-                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.due_date)}</td>
-                      <td className="px-5 py-3"><StatusBadge due_date={l.due_date} /></td>
-                      <td className="px-5 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => openEditLoaner(l)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            onClick={() => openReturnModal(l)}
-                            className="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
-                          >
-                            <RotateCcw size={13} /> Log Return
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <Fragment key={l.id}>
+                      <tr
+                        className={`hover:bg-gray-50/50 transition-colors ${l.notes ? 'cursor-pointer' : ''}`}
+                        onClick={() => l.notes && setExpandedNote(expandedNote === l.id ? null : l.id)}
+                      >
+                        <td className="px-5 py-3 font-medium text-gray-900">
+                          <div className="flex items-center gap-2">
+                            {l.computer_name}
+                            {l.notes && (
+                              <StickyNote size={13} fill="currentColor" className={`flex-shrink-0 transition-colors ${expandedNote === l.id ? 'text-yellow-400' : 'text-yellow-200'}`} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-gray-700">{l.person_name}</td>
+                        <td className="px-5 py-3 text-gray-600">{l.department_name}</td>
+                        <td className="px-5 py-3" onClick={e => e.stopPropagation()}><TicketLink ticket_number={l.ticket_number} /></td>
+                        <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.loaned_date)}</td>
+                        <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.due_date)}</td>
+                        <td className="px-5 py-3"><StatusBadge due_date={l.due_date} /></td>
+                        <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openEditLoaner(l)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => openReturnModal(l)}
+                              className="flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              <RotateCcw size={13} /> Log Return
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedNote === l.id && l.notes && (
+                        <tr className="bg-yellow-50/60">
+                          <td colSpan={8} className="px-5 py-2.5">
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <StickyNote size={14} fill="currentColor" className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                              <span>{l.notes}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -375,25 +399,47 @@ export default function Loaners() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {history.map(l => (
-                    <tr key={l.id} className="hover:bg-gray-50/50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{l.computer_name}</td>
-                      <td className="px-5 py-3 text-gray-700">{l.person_name}</td>
-                      <td className="px-5 py-3 text-gray-600">{l.department_name}</td>
-                      <td className="px-5 py-3"><TicketLink ticket_number={l.ticket_number} /></td>
-                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.loaned_date)}</td>
-                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.due_date)}</td>
-                      <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.returned_date)}</td>
-                      <td className="px-5 py-3 text-gray-600">{l.returned_by || '—'}</td>
-                      <td className="px-5 py-3 text-right">
-                        <button
-                          onClick={() => handleDeleteLoaner(l)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                          title="Delete record"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
+                    <Fragment key={l.id}>
+                      <tr
+                        className={`hover:bg-gray-50/50 transition-colors ${l.notes ? 'cursor-pointer' : ''}`}
+                        onClick={() => l.notes && setExpandedHistoryNote(expandedHistoryNote === l.id ? null : l.id)}
+                      >
+                        <td className="px-5 py-3 font-medium text-gray-900">
+                          <div className="flex items-center gap-2">
+                            {l.computer_name}
+                            {l.notes && (
+                              <StickyNote size={13} fill="currentColor" className={`flex-shrink-0 transition-colors ${expandedHistoryNote === l.id ? 'text-yellow-400' : 'text-yellow-200'}`} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-gray-700">{l.person_name}</td>
+                        <td className="px-5 py-3 text-gray-600">{l.department_name}</td>
+                        <td className="px-5 py-3" onClick={e => e.stopPropagation()}><TicketLink ticket_number={l.ticket_number} /></td>
+                        <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.loaned_date)}</td>
+                        <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.due_date)}</td>
+                        <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{fmtDate(l.returned_date)}</td>
+                        <td className="px-5 py-3 text-gray-600">{l.returned_by || '—'}</td>
+                        <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleDeleteLoaner(l)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Delete record"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedHistoryNote === l.id && l.notes && (
+                        <tr className="bg-yellow-50/60">
+                          <td colSpan={9} className="px-5 py-2.5">
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <StickyNote size={14} fill="currentColor" className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                              <span>{l.notes}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
