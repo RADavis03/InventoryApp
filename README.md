@@ -20,6 +20,16 @@ A self-hosted inventory management system for IT departments. Track consumable s
 
 ---
 
+## Deployment Options
+
+| Option | Best For |
+|---|---|
+| [Docker](#running-with-docker-recommended) | Linux servers, easiest setup, no Node.js required on host |
+| [Windows (Node + PM2)](#running-on-windows-without-docker) | Windows servers/PCs, no Docker |
+| [Local Dev](#running-locally-development) | Development and testing |
+
+---
+
 ## Running with Docker (Recommended)
 
 ### Prerequisites
@@ -70,6 +80,31 @@ If you pull new changes and need to rebuild the image:
 ```bash
 docker compose up -d --build
 ```
+
+---
+
+## Running on Windows (Without Docker)
+
+For full step-by-step instructions see **[WINDOWS.md](WINDOWS.md)**.
+
+**Quick summary:**
+
+1. Install [Node.js v20+](https://nodejs.org/) — check "Automatically install the necessary tools" during setup
+2. Clone to a non-protected path (e.g. `C:\InventoryApp\`, **not** `C:\Program Files\`)
+3. Install dependencies and build:
+   ```powershell
+   npm run install:all
+   npm run build
+   ```
+4. Install PM2 and start the app:
+   ```powershell
+   npm install -g pm2
+   $env:NODE_ENV="production"; pm2 start server\index.js --name inventory
+   pm2 save
+   ```
+5. App runs at **http://localhost:3001**
+
+See [WINDOWS.md](WINDOWS.md) for auto-start on reboot, update workflow, and troubleshooting.
 
 ---
 
