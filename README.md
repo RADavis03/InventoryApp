@@ -6,14 +6,17 @@ A self-hosted inventory management system for IT departments. Track consumable s
 
 ## Features
 
-- **Dashboard** — At-a-glance stats, low consumable and low toner alerts, and quick charge-out entry
+- **Dashboard** — At-a-glance stats, low consumable and low toner alerts, active loaner warnings, and quick charge-out entry
 - **Inventory** — Manage items with reorder thresholds and low-stock alerts; quick +/− buttons for on-the-spot stock adjustments
 - **Printer Toner** — Track toner cartridges per printer model (B&W and color); collapsible per-printer view; quick +/− stock buttons; shared stock pooling by part number; log restocks and charge-outs separately from general inventory
 - **Departments** — Manage departments and GL numbers (bulk import supported)
 - **Purchase Orders** — Log single or bulk restocks; supports both inventory items and custom/non-inventory items; collapsible view grouped by PO number
 - **Charge-Outs** — Record item deployments to departments with ticket numbers; separate tab for toner charge-outs
+- **Loaners** — Track loaner computers issued to staff; due-date status badges (Active / Due Soon / Overdue); full issue → edit → return lifecycle; history tab; manage computer list; dashboard warnings for overdue and due-soon loaners
 - **GL Swaps** — Reclassify charges between department GL accounts after the fact (finance reclassification workflow)
 - **Reports** — Monthly cost summaries per department with CSV export; GL Swaps report tab; low item and low toner inventory snapshot reports with CSV export
+- **Users** — Manage staff PINs; login lockout protection (locks after 5 consecutive wrong attempts)
+- **Audit Log** — Immutable change history for items, purchase orders, charge-outs, toner, and loaners; filterable by resource, action, user, and date range; CSV export
 
 ---
 
@@ -130,7 +133,8 @@ InventoryApp/
 │   │   ├── database.js   # SQLite connection
 │   │   └── schema.sql    # Table definitions
 │   └── routes/           # items, departments, purchaseOrders, chargeOuts,
-│                         # glSwaps, printers, toner, tonerChargeOuts, reports
+│                         # glSwaps, printers, toner, tonerChargeOuts,
+│                         # loaners, loanerComputers, reports, auditLog
 ├── data/                 # SQLite database (auto-created, gitignored)
 ├── Dockerfile
 └── docker-compose.yml
@@ -145,3 +149,4 @@ InventoryApp/
 3. **Log your opening stock** — Use **Bulk PO** on the Purchase Orders page (or **Restock Items** from the Inventory page) to enter your starting quantities.
 4. **Add printers** — Go to the Inventory page → Printer Toner tab to add printer models and their toner cartridges.
 5. **Start logging charge-outs** — Use the Charge-Outs page or the quick **New Charge-Out** button on the Dashboard.
+6. **Set up loaner computers** — Go to **Loaners → Manage Computers** to add your loaner machines, then use **Active Loaners → New Loaner** to track who has what and when it's due back.

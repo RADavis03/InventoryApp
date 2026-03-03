@@ -209,7 +209,7 @@
   <div class="cover-icon">🖥️</div>
   <div>
     <h1>GAH IT Inventory</h1>
-    <p>User Guide &nbsp;·&nbsp; GAH IT Department &nbsp;·&nbsp; Revised February 2026</p>
+    <p>User Guide &nbsp;·&nbsp; GAH IT Department &nbsp;·&nbsp; Revised March 2026</p>
   </div>
 </div>
 
@@ -232,6 +232,7 @@
     <li><a href="#departments">Departments</a></li>
     <li><a href="#purchase-orders">Purchase Orders</a></li>
     <li><a href="#charge-outs">Charge-Outs</a></li>
+    <li><a href="#loaners">Loaners</a></li>
     <li><a href="#reports">Reports</a></li>
     <li><a href="#users">Users &amp; Security</a></li>
     <li><a href="#audit-log">Audit Log</a></li>
@@ -297,9 +298,11 @@
     <tr><th>Section</th><th>What it shows</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>Stats cards</strong></td><td>Total number of item types, total units in stock, departments, and recent charge-outs.</td></tr>
-    <tr><td><strong>Low Stock Alerts</strong></td><td>Items whose current stock is at or below their reorder threshold. These are highlighted in red as a reminder to reorder.</td></tr>
-    <tr><td><strong>Recent Charge-Outs</strong></td><td>The last several items that were deployed/issued, so you can quickly see recent activity.</td></tr>
+    <tr><td><strong>Stats cards</strong></td><td>Total items in catalog, low-stock count, this month's charge-out count and total cost, and active loaner count. The loaner card turns red if any loaners are overdue, amber if any are due within 3 days.</td></tr>
+    <tr><td><strong>Loaner Alerts</strong></td><td>A warning panel listing any loaner computers that are overdue or due back within 3 days. Click "View all" to go to the Loaners page.</td></tr>
+    <tr><td><strong>Low Stock Alerts</strong></td><td>Items whose current stock is at or below their reorder threshold. Highlighted in red as a reminder to reorder.</td></tr>
+    <tr><td><strong>Low Toner Alerts</strong></td><td>Toner cartridges below their reorder threshold, grouped by printer model and slot color.</td></tr>
+    <tr><td><strong>Recent Charge-Outs</strong></td><td>The last 10 items deployed this month, so you can quickly see recent activity.</td></tr>
   </tbody>
 </table>
 
@@ -571,9 +574,99 @@
 <hr>
 
 <!-- ══════════════════════════════════════════════════════
-     8. REPORTS
+     8. LOANERS
 ══════════════════════════════════════════════════════ -->
-<h2 id="reports">8. Reports</h2>
+<h2 id="loaners">8. Loaners</h2>
+
+<p>
+  The <strong>Loaners</strong> page tracks computers that have been temporarily issued to staff.
+  It manages the full lifecycle — from issuing the computer to logging its return — and warns
+  you when due dates are approaching or missed.
+</p>
+
+<h3>The Three Tabs</h3>
+<table>
+  <thead><tr><th>Tab</th><th>What it shows</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Active Loaners</strong></td><td>All computers currently out on loan, sorted by due date. Shows the borrower's name, department, ticket number, loaned date, due date, and status badge.</td></tr>
+    <tr><td><strong>Loaner History</strong></td><td>Returned loaners with the returned date and who logged the return. Read-only; individual records can be deleted if needed.</td></tr>
+    <tr><td><strong>Manage Computers</strong></td><td>The list of loaner computers you track. Add, rename, or remove computers from here.</td></tr>
+  </tbody>
+</table>
+
+<h3>Status Badges</h3>
+<p>Each active loaner shows a status badge based on today's date vs. the due date:</p>
+<ul>
+  <li><span class="badge badge-green">Active</span> — due date is more than 3 days away, all is fine.</li>
+  <li><span class="badge badge-amber">Due Soon</span> — due date is today or within the next 3 days.</li>
+  <li><span class="badge badge-red">Overdue</span> — due date has passed and the computer has not been returned.</li>
+</ul>
+
+<h3>Issuing a Loaner</h3>
+<ol class="steps">
+  <li>Go to <strong>Loaners</strong> in the sidebar, then click <strong>New Loaner</strong> (Active Loaners tab).</li>
+  <li>Select the <strong>Computer</strong> from the dropdown. Only available (not currently loaned) computers appear.</li>
+  <li>Select the <strong>Department</strong> the borrower belongs to.</li>
+  <li>Enter the <strong>Person Name</strong> of whoever is borrowing it.</li>
+  <li>Enter the <strong>Ticket #</strong> from your helpdesk system (required).</li>
+  <li>Set the <strong>Loaned Date</strong> and <strong>Due Date</strong>.</li>
+  <li>Add optional <strong>Notes</strong>, then click <strong>Create Loaner</strong>.</li>
+</ol>
+
+<div class="box box-info">
+  <span class="box-icon">ℹ️</span>
+  <div>
+    The <strong>Ticket #</strong> field is required and renders as a clickable link directly to the helpdesk ticket, making it easy to cross-reference the original request.
+  </div>
+</div>
+
+<h3>Editing an Active Loaner</h3>
+<p>
+  Click the <strong>pencil icon</strong> on any active loaner row to open the edit form.
+  You can update any field — person name, department, computer, dates, ticket number, or notes.
+  The edit is audit-logged.
+</p>
+
+<h3>Logging a Return</h3>
+<ol class="steps">
+  <li>On the <strong>Active Loaners</strong> tab, click <strong>Log Return</strong> on the appropriate row.</li>
+  <li>A confirmation panel shows the computer name, borrower, and due date.</li>
+  <li>The <strong>Returned By</strong> field pre-fills with your name — change it if someone else is processing the return.</li>
+  <li>Click <strong>Confirm Return</strong>. The loaner moves to the History tab with today's date as the returned date.</li>
+</ol>
+
+<h3>Managing Computers</h3>
+<p>
+  Before you can issue a loaner, the computer must be in the system.
+  Use the <strong>Manage Computers</strong> tab to:
+</p>
+<ul>
+  <li><strong>Add a computer</strong> — click <strong>Add Computer</strong>, enter a name (e.g. <code>GAHL002743</code>) and optional notes such as the model or serial number.</li>
+  <li><strong>Edit</strong> — click the pencil icon to rename or update notes.</li>
+  <li><strong>Delete</strong> — click the trash icon. Computers currently on active loan cannot be deleted.</li>
+</ul>
+
+<div class="box box-warn">
+  <span class="box-icon">⚠️</span>
+  <div>
+    A computer shown as <span class="badge badge-amber">Currently Loaned</span> cannot be deleted or re-issued until it is returned. Log the return first.
+  </div>
+</div>
+
+<h3>Dashboard Warnings</h3>
+<p>
+  The Dashboard shows an <strong>Active Loaners</strong> stat card. Its color reflects the worst
+  status across all active loaners (red for overdue, amber for due soon, blue if all are on schedule).
+  If any loaners are overdue or due soon, a <strong>Loaner Alerts</strong> panel appears below the
+  stat cards listing each one with the borrower's name, department, and due date.
+</p>
+
+<hr>
+
+<!-- ══════════════════════════════════════════════════════
+     9. REPORTS
+══════════════════════════════════════════════════════ -->
+<h2 id="reports">9. Reports</h2>
 
 <p>
   The Reports page generates a <strong>monthly charge-out summary</strong> — a full list of
@@ -597,9 +690,9 @@
 <hr>
 
 <!-- ══════════════════════════════════════════════════════
-     9. USERS & SECURITY
+     10. USERS & SECURITY
 ══════════════════════════════════════════════════════ -->
-<h2 id="users">9. Users &amp; Security</h2>
+<h2 id="users">10. Users &amp; Security</h2>
 
 <p>
   The <strong>Users</strong> page is where IT administrators manage who can sign in to the system.
@@ -637,14 +730,14 @@
 <hr>
 
 <!-- ══════════════════════════════════════════════════════
-     10. AUDIT LOG
+     11. AUDIT LOG
 ══════════════════════════════════════════════════════ -->
-<h2 id="audit-log">10. Audit Log</h2>
+<h2 id="audit-log">11. Audit Log</h2>
 
 <p>
-  The <strong>Audit Log</strong> is a record of every change made to inventory items and
-  purchase orders — who made it, when, and exactly what changed. It is read-only; entries
-  cannot be edited or deleted.
+  The <strong>Audit Log</strong> is a record of every change made to inventory items, purchase orders,
+  charge-outs, toner, and loaners — who made it, when, and exactly what changed. It is read-only;
+  entries cannot be edited or deleted.
 </p>
 
 <h3>What Gets Logged</h3>
@@ -653,23 +746,33 @@
   <tbody>
     <tr>
       <td><span class="badge badge-green">Created</span></td>
-      <td>A new item or purchase order was added. Shows all field values at the time of creation.</td>
+      <td>A new record was added. Shows all field values at the time of creation.</td>
     </tr>
     <tr>
       <td><span class="badge badge-blue">Updated</span></td>
-      <td>An existing item was edited. Shows only the fields that changed, with the old value → new value.</td>
+      <td>An existing record was edited (including loaner returns). Shows only the fields that changed, with the old value → new value.</td>
     </tr>
     <tr>
       <td><span class="badge badge-red">Deleted</span></td>
-      <td>An item or purchase order was removed. Shows what the record contained before deletion.</td>
+      <td>A record was removed. Shows what it contained before deletion.</td>
     </tr>
   </tbody>
 </table>
 
+<h3>Logged Resources</h3>
+<p>The <strong>Resource</strong> filter lets you narrow the log to a specific area of the system:</p>
+<ul>
+  <li><strong>Inventory Items</strong> — item additions, edits, and deletions</li>
+  <li><strong>Purchase Orders</strong> — stock receipts logged or removed</li>
+  <li><strong>Charge-Outs</strong> — consumable deployments to departments</li>
+  <li><strong>Printers / Toner Cartridges / Toner Restocks / Toner Charge-Outs</strong> — toner inventory changes</li>
+  <li><strong>Loaners</strong> — loaner creation, edits, returns, and deletions</li>
+</ul>
+
 <h3>Filtering the Log</h3>
 <p>Use the filter bar at the top to narrow down entries:</p>
 <ul>
-  <li><strong>Resource</strong> — show only Inventory Items or only Purchase Orders</li>
+  <li><strong>Resource</strong> — filter by a specific resource type (see above)</li>
   <li><strong>Action</strong> — show only Created, Updated, or Deleted entries</li>
   <li><strong>User</strong> — show only changes made by a specific person</li>
   <li><strong>Date range</strong> — pick a preset (Today, Last 7 days, This month, etc.) or enter custom From / To dates</li>
@@ -685,9 +788,9 @@
 <hr>
 
 <!-- ══════════════════════════════════════════════════════
-     11. TIPS & FAQ
+     12. TIPS & FAQ
 ══════════════════════════════════════════════════════ -->
-<h2 id="tips">11. Tips &amp; FAQ</h2>
+<h2 id="tips">12. Tips &amp; FAQ</h2>
 
 <h3>Frequently Asked Questions</h3>
 
@@ -734,6 +837,26 @@
   create a new one with your preferred PIN.
 </p>
 
+<h3>Q: A loaner computer is overdue — what do I do?</h3>
+<p>
+  The Dashboard will show the overdue loaner in the <strong>Loaner Alerts</strong> panel and the
+  Active Loaners stat card will turn red. Go to <strong>Loaners → Active Loaners</strong>, find the
+  row, and either edit the due date if the loan was extended, or click <strong>Log Return</strong>
+  once the computer is back. Until it is returned it will continue to show as Overdue.
+</p>
+
+<h3>Q: Can I re-issue a loaner to a different person right after it's returned?</h3>
+<p>
+  Yes. Once a return is logged, the computer immediately becomes available again and will appear
+  in the dropdown when creating a new loaner.
+</p>
+
+<h3>Q: The loaner computer I want to delete is greyed out. Why?</h3>
+<p>
+  A computer that is currently on active loan cannot be deleted. Log the return first, then
+  delete it from <strong>Manage Computers</strong>.
+</p>
+
 <h3>Quick Reference — Navigation</h3>
 <div class="nav-grid">
   <div class="nav-item">
@@ -760,6 +883,11 @@
     <div class="nav-item-icon">↔️</div>
     <div class="nav-item-label">Charge-Outs</div>
     <div class="nav-item-desc">Log deployments to departments</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-item-icon">💻</div>
+    <div class="nav-item-label">Loaners</div>
+    <div class="nav-item-desc">Track loaned computers &amp; due dates</div>
   </div>
   <div class="nav-item">
     <div class="nav-item-icon">📈</div>
