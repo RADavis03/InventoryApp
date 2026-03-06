@@ -237,6 +237,7 @@
     <li><a href="#users">Users &amp; Security</a></li>
     <li><a href="#audit-log">Audit Log</a></li>
     <li><a href="#tips">Tips &amp; FAQ</a></li>
+    <li><a href="#updating">Updating the App</a></li>
   </ol>
 </div>
 
@@ -903,6 +904,46 @@
     <div class="nav-item-icon">📋</div>
     <div class="nav-item-label">Audit Log</div>
     <div class="nav-item-desc">Track who changed what and when</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     13. UPDATING THE APP
+══════════════════════════════════════════════════════ -->
+<h2 id="updating">13. Updating the App</h2>
+
+<p>
+  When a new version is released, follow the steps below for your installation type.
+  Your database is never touched by an update — all existing data is preserved.
+</p>
+
+<h3>Docker installation (Linux server)</h3>
+<p>Run these commands on the server:</p>
+<pre style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.7;overflow-x:auto;margin-bottom:12px;">cd /path/to/InventoryApp
+git pull
+docker compose up -d --build</pre>
+<p>
+  <code>git pull</code> downloads the latest code from GitHub.
+  <code>docker compose up -d --build</code> rebuilds the container image and restarts the app.
+  The <code>data/</code> folder (your database) is volume-mounted and is never affected.
+</p>
+
+<h3>Windows / Node + PM2 installation (no Docker)</h3>
+<p>Open PowerShell in the app folder and run:</p>
+<pre style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.7;overflow-x:auto;margin-bottom:12px;">cd C:\InventoryApp
+git pull
+npm run build
+pm2 restart inventory</pre>
+<p>
+  <code>git pull</code> fetches the latest code.
+  <code>npm run build</code> rebuilds the React frontend into <code>client\dist\</code> — this step is required whenever the frontend changes.
+  <code>pm2 restart inventory</code> restarts the Express server to pick up any backend changes.
+</p>
+
+<div class="box box-tip">
+  <span class="box-icon">💡</span>
+  <div>
+    If you're not sure which installation type you have: if the app is running inside Docker, use the Docker steps. If it was installed with Node.js and PM2 directly on Windows, use the Windows steps.
   </div>
 </div>
 

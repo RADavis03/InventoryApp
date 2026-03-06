@@ -83,6 +83,31 @@ docker compose up -d --build
 
 ---
 
+## Updating an Existing Installation
+
+### Docker
+
+```bash
+cd /path/to/InventoryApp
+git pull
+docker compose up -d --build
+```
+
+`git pull` fetches the latest code. `--build` rebuilds the image with the new code. Your database in `data/` is untouched.
+
+### Windows / Node + PM2 (no Docker)
+
+```powershell
+cd C:\InventoryApp
+git pull
+npm run build
+pm2 restart inventory
+```
+
+`npm run build` is required because the React frontend changed — it rebuilds `client/dist/` which Express serves. PM2 then restarts the server to pick up any backend changes.
+
+---
+
 ## Running on Windows (Without Docker)
 
 For full step-by-step instructions see **[WINDOWS.md](WINDOWS.md)**.
