@@ -1,5 +1,5 @@
 import { useEffect, useState, Fragment } from 'react';
-import { Plus, Trash2, ArrowRightLeft, Download, Printer, StickyNote } from 'lucide-react';
+import { Plus, Trash2, ArrowRightLeft, Download, Printer, StickyNote, X, Layers } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -113,6 +113,76 @@ export default function ChargeOuts() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
+  // ── Bulk Charge-Out (items) ────────────────────────────
+  const emptyBulkHeader = () => ({ department_id: '', ticket_number: '', notes: '', charged_at: today(), charged_by: currentUser?.name || '' });
+  const newItemLine = () => ({ item_id: '', quantity: '', unit_cost: '' });
+  const [showBulkModal,    setShowBulkModal]    = useState(false);
+  const [bulkHeader,       setBulkHeader]       = useState(emptyBulkHeader);
+  const [bulkLines,        setBulkLines]        = useState([newItemLine()]);
+  const [bulkError,        setBulkError]        = useState('');
+  const [bulkSubmitting,   setBulkSubmitting]   = useState(false);
+
+  const openBulkModal = () => { setBulkHeader(emptyBulkHeader()); setBulkLines([newItemLine()]); setBulkError(''); setShowBulkModal(true); };
+  const setBH = (k) => (e) => setBulkHeader(f => ({ ...f, [k]: e.target.value }));
+  const updateItemLine = (i, k, val) => setBulkLines(ls => ls.map((l, idx) => idx === i ? { ...l, [k]: val } : l));
+  const handleBulkItemChange = (i, itemId) => {
+    const item = items.find(it => it.id === parseInt(itemId));
+    setBulkLines(ls => ls.map((l, idx) => idx === i ? { ...l, item_id: itemId, unit_cost: item ? (item.latest_purchase_price ?? item.unit_price ?? '') : '' } : l));
+  };
+  const removeItemLine = (i) => setBulkLines(ls => ls.filter((_, idx) => idx !== i));
+  const addItemLine = () => setBulkLines(ls => [...ls, newItemLine()]);
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    setBulkError('');
+    const validLines = bulkLines.filter(l => l.item_id && l.quantity && l.unit_cost !== '');
+    if (validLines.length === 0) { setBulkError('Add at least one item line.'); return; }
+    setBulkSubmitting(true);
+    try {
+      await api.chargeOuts.bulkCreate({ ...bulkHeader, lines: validLines.map(l => ({ item_id: parseInt(l.item_id), quantity: parseInt(l.quantity), unit_cost: parseFloat(l.unit_cost) })) });
+      setShowBulkModal(false);
+      load();
+    } catch (err) {
+      setBulkError(err.message);
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
+  // ── Bulk Toner Charge-Out ──────────────────────────────
+  const newTonerLine = () => ({ toner_id: '', quantity: '' });
+  const [showBulkTonerModal,  setShowBulkTonerModal]  = useState(false);
+  const [bulkTonerHeader,     setBulkTonerHeader]     = useState(emptyBulkHeader);
+  const [bulkTonerLines,      setBulkTonerLines]      = useState([newTonerLine()]);
+  const [bulkTonerError,      setBulkTonerError]      = useState('');
+  const [bulkTonerSubmitting, setBulkTonerSubmitting] = useState(false);
+
+  const openBulkTonerModal = () => {
+    setBulkTonerHeader(emptyBulkHeader()); setBulkTonerLines([newTonerLine()]); setBulkTonerError(''); setShowBulkTonerModal(true);
+    if (tonerCartridges.length === 0) api.toner.list().then(setTonerCartridges);
+  };
+  const setBTH = (k) => (e) => setBulkTonerHeader(f => ({ ...f, [k]: e.target.value }));
+  const updateTonerLine = (i, k, val) => setBulkTonerLines(ls => ls.map((l, idx) => idx === i ? { ...l, [k]: val } : l));
+  const removeTonerLine = (i) => setBulkTonerLines(ls => ls.filter((_, idx) => idx !== i));
+  const addTonerLine = () => setBulkTonerLines(ls => [...ls, newTonerLine()]);
+
+  const handleBulkTonerSubmit = async (e) => {
+    e.preventDefault();
+    setBulkTonerError('');
+    const validLines = bulkTonerLines.filter(l => l.toner_id && l.quantity);
+    if (validLines.length === 0) { setBulkTonerError('Add at least one toner line.'); return; }
+    setBulkTonerSubmitting(true);
+    try {
+      await api.tonerChargeOuts.bulkCreate({ ...bulkTonerHeader, lines: validLines.map(l => ({ toner_id: parseInt(l.toner_id), quantity: parseInt(l.quantity) })) });
+      setShowBulkTonerModal(false);
+      loadTonerCOs();
+    } catch (err) {
+      setBulkTonerError(err.message);
+    } finally {
+      setBulkTonerSubmitting(false);
+    }
+  };
+
   // ── GL Swaps tab ───────────────────────────────────────
   const [glSwapList,       setGlSwapList]       = useState([]);
   const [swapLoading,      setSwapLoading]      = useState(false);
@@ -215,9 +285,14 @@ export default function ChargeOuts() {
           <p className="text-gray-500 mt-1">Record and track deployments to departments</p>
         </div>
         {activeTab === 'chargeOuts' && (
-          <button onClick={openAdd} className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
-            <Plus size={16} /> New Charge-Out
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={openBulkModal} className="flex items-center gap-2 bg-white hover:bg-gray-50 text-brand-700 border border-brand-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <Layers size={16} /> Bulk Charge-Out
+            </button>
+            <button onClick={openAdd} className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <Plus size={16} /> New Charge-Out
+            </button>
+          </div>
         )}
         {activeTab === 'glSwaps' && (
           <button onClick={() => { setSwapForm(emptySwapForm()); setSwapError(''); setShowSwapModal(true); }}
@@ -226,9 +301,14 @@ export default function ChargeOuts() {
           </button>
         )}
         {activeTab === 'toner' && (
-          <button onClick={openTonerModal} className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
-            <Plus size={16} /> New Toner Charge-Out
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={openBulkTonerModal} className="flex items-center gap-2 bg-white hover:bg-gray-50 text-brand-700 border border-brand-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <Layers size={16} /> Bulk Toner Charge-Out
+            </button>
+            <button onClick={openTonerModal} className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <Plus size={16} /> New Toner Charge-Out
+            </button>
+          </div>
         )}
       </div>
 
@@ -656,6 +736,207 @@ export default function ChargeOuts() {
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setShowTonerModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
               <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">Record Toner Charge-Out</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Bulk Charge-Out Modal (Items) ── */}
+      {showBulkModal && (
+        <Modal title="Bulk Charge-Out" onClose={() => setShowBulkModal(false)} size="xl">
+          <form onSubmit={handleBulkSubmit} className="space-y-5">
+            {/* Shared header */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={bulkHeader.department_id} onChange={setBH('department_id')} required>
+                  <option value="">Select a department...</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name} — {d.gl_number}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.ticket_number} onChange={setBH('ticket_number')} placeholder="e.g. INC-12345" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.charged_at} onChange={setBH('charged_at')} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.notes} onChange={setBH('notes')} placeholder="Optional" />
+              </div>
+            </div>
+
+            {/* Line items */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700">Items</label>
+                <button type="button" onClick={addItemLine}
+                  className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800 border border-brand-200 hover:border-brand-300 bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <Plus size={12} /> Add Item
+                </button>
+              </div>
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Item</th>
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-24">Qty</th>
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28">Unit Cost ($)</th>
+                      <th className="w-10" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {bulkLines.map((line, i) => {
+                      const sel = items.find(it => it.id === parseInt(line.item_id));
+                      return (
+                        <tr key={i}>
+                          <td className="px-3 py-2">
+                            <select className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                              value={line.item_id} onChange={e => handleBulkItemChange(i, e.target.value)} required>
+                              <option value="">Select item...</option>
+                              {items.map(it => <option key={it.id} value={it.id} disabled={it.stock <= 0}>{it.name} ({it.stock} avail.)</option>)}
+                            </select>
+                          </td>
+                          <td className="px-3 py-2">
+                            <input type="number" min="1" step="1" max={sel?.stock || undefined}
+                              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                              value={line.quantity} onChange={e => updateItemLine(i, 'quantity', e.target.value)} placeholder="0" required />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input type="number" min="0" step="0.01"
+                              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                              value={line.unit_cost} onChange={e => updateItemLine(i, 'unit_cost', e.target.value)} placeholder="0.00" required />
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            {bulkLines.length > 1 && (
+                              <button type="button" onClick={() => removeItemLine(i)}
+                                className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                <X size={14} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {bulkError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{bulkError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setShowBulkModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" disabled={bulkSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50">
+                {bulkSubmitting ? 'Saving…' : `Record ${bulkLines.filter(l => l.item_id).length} Charge-Out${bulkLines.filter(l => l.item_id).length !== 1 ? 's' : ''}`}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Bulk Toner Charge-Out Modal ── */}
+      {showBulkTonerModal && (
+        <Modal title="Bulk Toner Charge-Out" onClose={() => setShowBulkTonerModal(false)} size="xl">
+          <form onSubmit={handleBulkTonerSubmit} className="space-y-5">
+            {/* Shared header */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={bulkTonerHeader.department_id} onChange={setBTH('department_id')} required>
+                  <option value="">Select a department...</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name} — {d.gl_number}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkTonerHeader.ticket_number} onChange={setBTH('ticket_number')} placeholder="e.g. INC-12345" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkTonerHeader.charged_at} onChange={setBTH('charged_at')} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkTonerHeader.notes} onChange={setBTH('notes')} placeholder="Optional" />
+              </div>
+            </div>
+
+            {/* Line items */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700">Toner Cartridges</label>
+                <button type="button" onClick={addTonerLine}
+                  className="flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800 border border-brand-200 hover:border-brand-300 bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <Plus size={12} /> Add Toner
+                </button>
+              </div>
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Toner Cartridge</th>
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-24">Qty</th>
+                      <th className="w-10" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {bulkTonerLines.map((line, i) => (
+                      <tr key={i}>
+                        <td className="px-3 py-2">
+                          <select className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                            value={line.toner_id} onChange={e => updateTonerLine(i, 'toner_id', e.target.value)} required>
+                            <option value="">Select toner...</option>
+                            {tonerCartridges.map(t => (
+                              <option key={t.id} value={t.id}>
+                                {t.printer_model} — {SLOT_LABEL[t.slot] || t.slot}{t.part_number ? ` (${t.part_number})` : ''} · {t.stock} in stock
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">
+                          <input type="number" min="1" step="1"
+                            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            value={line.quantity} onChange={e => updateTonerLine(i, 'quantity', e.target.value)} placeholder="1" required />
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          {bulkTonerLines.length > 1 && (
+                            <button type="button" onClick={() => removeTonerLine(i)}
+                              className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                              <X size={14} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {bulkTonerError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{bulkTonerError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setShowBulkTonerModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" disabled={bulkTonerSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50">
+                {bulkTonerSubmitting ? 'Saving…' : `Record ${bulkTonerLines.filter(l => l.toner_id).length} Toner Charge-Out${bulkTonerLines.filter(l => l.toner_id).length !== 1 ? 's' : ''}`}
+              </button>
             </div>
           </form>
         </Modal>

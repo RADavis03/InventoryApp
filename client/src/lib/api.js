@@ -54,6 +54,7 @@ export const purchaseOrders = {
 export const chargeOuts = {
   list: (params) => request('GET', `/charge-outs${params ? '?' + new URLSearchParams(params) : ''}`),
   create: (data) => request('POST', '/charge-outs', data),
+  bulkCreate: (data) => request('POST', '/charge-outs/bulk', data),
   delete: (id) => request('DELETE', `/charge-outs/${id}`),
 };
 
@@ -73,9 +74,10 @@ export const toner = {
 };
 
 export const tonerChargeOuts = {
-  list:   (params) => request('GET',    `/toner-charge-outs${params ? '?' + new URLSearchParams(params) : ''}`),
-  create: (data)   => request('POST',   '/toner-charge-outs', data),
-  delete: (id)     => request('DELETE', `/toner-charge-outs/${id}`),
+  list:       (params) => request('GET',    `/toner-charge-outs${params ? '?' + new URLSearchParams(params) : ''}`),
+  create:     (data)   => request('POST',   '/toner-charge-outs', data),
+  bulkCreate: (data)   => request('POST',   '/toner-charge-outs/bulk', data),
+  delete:     (id)     => request('DELETE', `/toner-charge-outs/${id}`),
 };
 
 export const glSwaps = {

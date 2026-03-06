@@ -53,6 +53,45 @@ router.post('/', (req, res) => {
   res.status(201).json(created);
 });
 
+// POST /api/toner-charge-outs/bulk
+router.post('/bulk', (req, res) => {
+  const { department_id, charged_by, ticket_number, notes, charged_at, lines } = req.body;
+
+  if (!department_id || !charged_by || !charged_at || !Array.isArray(lines) || lines.length === 0) {
+    return res.status(400).json({ error: 'department_id, charged_by, charged_at, and lines are required' });
+  }
+
+  const insertStmt = db.prepare(
+    'INSERT INTO toner_charge_outs (toner_id, department_id, quantity, charged_by, ticket_number, notes, charged_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
+
+  const created = [];
+
+  try {
+    db.transaction(() => {
+      for (const line of lines) {
+        const { toner_id, quantity } = line;
+        if (!toner_id || !quantity) {
+          throw new Error('Each line requires toner_id and quantity');
+        }
+        const toner = db.prepare('SELECT * FROM toner_cartridges WHERE id = ?').get(toner_id);
+        if (!toner) throw new Error(`Toner cartridge not found: ${toner_id}`);
+        const result = insertStmt.run(toner_id, department_id, parseInt(quantity), charged_by, ticket_number || null, notes || null, charged_at);
+        created.push(result.lastInsertRowid);
+      }
+    })();
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  for (const id of created) {
+    const tco = db.prepare(enrichedSelect + ' WHERE tco.id = ?').get(id);
+    logAudit('toner_charge_outs', id, 'CREATE', req.headers['x-changed-by'], null, tco);
+  }
+
+  res.status(201).json({ created: created.length });
+});
+
 // DELETE /api/toner-charge-outs/:id
 router.delete('/:id', (req, res) => {
   const existing = db.prepare(enrichedSelect + ' WHERE tco.id = ?').get(req.params.id);

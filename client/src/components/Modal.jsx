@@ -8,7 +8,7 @@ export default function Modal({ title, onClose, children, size = 'md' }) {
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const widths = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' };
+  const widths = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus, Printer, Laptop } from 'lucide-react';
+import { Package, AlertTriangle, ArrowRightLeft, DollarSign, ChevronRight, Plus, Printer, Laptop, Layers, X } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import * as api from '../lib/api.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+const SLOT_LABEL = {
+  BLACK: 'Black', CYAN: 'Cyan', MAGENTA: 'Magenta', YELLOW: 'Yellow',
+  IMAGING_KIT: 'Imaging Kit', BLACK_DEVELOPER: 'Black Developer',
+  COLOR_DEVELOPER: 'Color Developer', COLOR_DRUM: 'Color Drum',
+  BLACK_DRUM: 'Black Drum', WASTE_TONER: 'Waste Toner',
+};
 
 const SLOT_STYLE = {
   BLACK:           { dot: 'bg-gray-800',   badge: 'bg-gray-100 text-gray-800',     label: 'Black'           },
@@ -48,8 +55,6 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
-  const emptyCoForm = () => ({ item_id: '', department_id: '', quantity: '', unit_cost: '', charged_by: currentUser?.name || '', ticket_number: '', notes: '', charged_at: today() });
-
   const [itemsList, setItemsList] = useState([]);
   const [tonerList, setTonerList] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -58,10 +63,109 @@ export default function Dashboard() {
   const [monthTotal, setMonthTotal] = useState(0);
   const [activeLoaners, setActiveLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCoModal, setShowCoModal] = useState(false);
-  const [coForm, setCoForm] = useState(emptyCoForm);
-  const [coError, setCoError] = useState('');
-  const [coSubmitting, setCoSubmitting] = useState(false);
+
+  // ── Bulk Charge-Out modal ─────────────────────────────
+  const emptyBulkHeader = () => ({ department_id: '', ticket_number: '', notes: '', charged_at: today(), charged_by: currentUser?.name || '' });
+  const newItemLine  = () => ({ item_id: '', quantity: '', unit_cost: '' });
+  const newTonerLine = () => ({ toner_id: '', quantity: '' });
+
+  const [showBulkModal,    setShowBulkModal]    = useState(false);
+  const [bulkTab,          setBulkTab]          = useState('items');
+  const [bulkHeader,       setBulkHeader]       = useState(emptyBulkHeader);
+  const [bulkItemLines,    setBulkItemLines]    = useState([newItemLine()]);
+  const [bulkTonerLines,   setBulkTonerLines]   = useState([newTonerLine()]);
+  const [bulkError,        setBulkError]        = useState('');
+  const [bulkSubmitting,   setBulkSubmitting]   = useState(false);
+
+  const openBulkModal = () => {
+    setBulkHeader(emptyBulkHeader());
+    setBulkItemLines([newItemLine()]);
+    setBulkTonerLines([newTonerLine()]);
+    setBulkError('');
+    setBulkTab('items');
+    setShowBulkModal(true);
+  };
+  const setBH = (k) => (e) => setBulkHeader(f => ({ ...f, [k]: e.target.value }));
+
+  const handleBulkItemSelect = (i, itemId) => {
+    const item = itemsList.find(it => it.id === parseInt(itemId));
+    setBulkItemLines(ls => ls.map((l, idx) => idx === i ? { ...l, item_id: itemId, unit_cost: item ? (item.latest_purchase_price ?? item.unit_price ?? '') : '' } : l));
+  };
+  const updateItemLine  = (i, k, val) => setBulkItemLines(ls => ls.map((l, idx) => idx === i ? { ...l, [k]: val } : l));
+  const removeItemLine  = (i) => setBulkItemLines(ls => ls.filter((_, idx) => idx !== i));
+  const addItemLine     = () => setBulkItemLines(ls => [...ls, newItemLine()]);
+
+  const updateTonerLine = (i, k, val) => setBulkTonerLines(ls => ls.map((l, idx) => idx === i ? { ...l, [k]: val } : l));
+  const removeTonerLine = (i) => setBulkTonerLines(ls => ls.filter((_, idx) => idx !== i));
+  const addTonerLine    = () => setBulkTonerLines(ls => [...ls, newTonerLine()]);
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    setBulkError('');
+    const validItems = bulkItemLines.filter(l => l.item_id && l.quantity && l.unit_cost !== '');
+    const validToner = bulkTonerLines.filter(l => l.toner_id && l.quantity);
+    if (validItems.length === 0 && validToner.length === 0) {
+      setBulkError('Add at least one item or toner line.'); return;
+    }
+    setBulkSubmitting(true);
+    try {
+      const calls = [];
+      if (validItems.length > 0) {
+        calls.push(api.chargeOuts.bulkCreate({
+          ...bulkHeader,
+          lines: validItems.map(l => ({ item_id: parseInt(l.item_id), quantity: parseInt(l.quantity), unit_cost: parseFloat(l.unit_cost) })),
+        }));
+      }
+      if (validToner.length > 0) {
+        calls.push(api.tonerChargeOuts.bulkCreate({
+          ...bulkHeader,
+          lines: validToner.map(l => ({ toner_id: parseInt(l.toner_id), quantity: parseInt(l.quantity) })),
+        }));
+      }
+      await Promise.all(calls);
+      setShowBulkModal(false);
+      loadDashboard();
+    } catch (err) {
+      setBulkError(err.message);
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
+  // ── Quick Issue Loaner modal ──────────────────────────
+  const emptyLoanerForm = () => ({
+    computer_id: '', department_id: '', person_name: '',
+    ticket_number: '', loaned_date: today(), due_date: '', notes: '',
+  });
+  const [showLoanerModal,    setShowLoanerModal]    = useState(false);
+  const [loanerForm,         setLoanerForm]         = useState(emptyLoanerForm);
+  const [loanerError,        setLoanerError]        = useState('');
+  const [loanerSubmitting,   setLoanerSubmitting]   = useState(false);
+  const [computers,          setComputers]          = useState([]);
+
+  const openLoanerModal = () => {
+    setLoanerForm(emptyLoanerForm());
+    setLoanerError('');
+    setShowLoanerModal(true);
+    if (computers.length === 0) api.loanerComputers.list().then(setComputers);
+  };
+  const setlf = (k) => (e) => setLoanerForm(f => ({ ...f, [k]: e.target.value }));
+  const availableComputers = computers.filter(c => !c.is_loaned_out);
+
+  const handleLoanerSubmit = async (e) => {
+    e.preventDefault();
+    setLoanerError('');
+    setLoanerSubmitting(true);
+    try {
+      await api.loaners.create(loanerForm);
+      setShowLoanerModal(false);
+      loadDashboard();
+    } catch (err) {
+      setLoanerError(err.message);
+    } finally {
+      setLoanerSubmitting(false);
+    }
+  };
 
   const now = new Date();
 
@@ -85,44 +189,6 @@ export default function Dashboard() {
   };
 
   useEffect(() => { loadDashboard(); }, []);
-
-  const selectedCoItem = itemsList.find(i => i.id === parseInt(coForm.item_id));
-
-  const handleCoItemChange = (e) => {
-    const item = itemsList.find(i => i.id === parseInt(e.target.value));
-    setCoForm(f => ({
-      ...f,
-      item_id: e.target.value,
-      unit_cost: item ? (item.latest_purchase_price ?? item.unit_price) : '',
-    }));
-  };
-
-  const openCoModal = () => {
-    setCoForm(emptyCoForm());
-    setCoError('');
-    setShowCoModal(true);
-  };
-
-  const handleCoSubmit = async (e) => {
-    e.preventDefault();
-    setCoError('');
-    if (selectedCoItem && parseInt(coForm.quantity) > selectedCoItem.stock) {
-      setCoError(`Insufficient stock. Only ${selectedCoItem.stock} units available.`);
-      return;
-    }
-    setCoSubmitting(true);
-    try {
-      await api.chargeOuts.create(coForm);
-      setShowCoModal(false);
-      loadDashboard();
-    } catch (err) {
-      setCoError(err.message);
-    } finally {
-      setCoSubmitting(false);
-    }
-  };
-
-  const setco = (k) => (e) => setCoForm(f => ({ ...f, [k]: e.target.value }));
 
   const lowStockItems = itemsList.filter(i => i.stock <= i.reorder_threshold);
   const lowTonerItems = tonerList.filter(t => t.stock < t.reorder_threshold);
@@ -155,12 +221,20 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-500 mt-1">GAH IT Inventory overview</p>
         </div>
-        <button
-          onClick={openCoModal}
-          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus size={16} /> New Charge-Out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openLoanerModal}
+            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-brand-700 border border-brand-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Laptop size={16} /> Issue Loaner
+          </button>
+          <button
+            onClick={openBulkModal}
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Layers size={16} /> Bulk Charge-Out
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -311,118 +385,238 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {showCoModal && (
-        <Modal title="New Charge-Out" onClose={() => setShowCoModal(false)} size="lg">
-          <form onSubmit={handleCoSubmit} className="space-y-4">
+      {/* ── Bulk Charge-Out Modal ── */}
+      {showBulkModal && (
+        <Modal title="Bulk Charge-Out" onClose={() => setShowBulkModal(false)} size="xl">
+          <form onSubmit={handleBulkSubmit} className="space-y-5">
+            {/* Shared header */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Item <span className="text-red-500">*</span></label>
-                <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
-                  value={coForm.item_id} onChange={handleCoItemChange} required
-                >
-                  <option value="">Select an item...</option>
-                  {itemsList.map(i => (
-                    <option key={i.id} value={i.id} disabled={i.stock <= 0}>
-                      {i.name} ({i.stock} available)
-                    </option>
-                  ))}
-                </select>
-                {selectedCoItem && (
-                  <p className={`text-xs mt-1 ${selectedCoItem.stock <= selectedCoItem.reorder_threshold ? 'text-red-600 font-medium' : 'text-gray-400'}`}>
-                    {selectedCoItem.stock} units in stock
-                    {selectedCoItem.stock <= selectedCoItem.reorder_threshold && ' — low stock'}
-                  </p>
-                )}
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
-                <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
-                  value={coForm.department_id} onChange={setco('department_id')} required
-                >
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={bulkHeader.department_id} onChange={setBH('department_id')} required>
                   <option value="">Select a department...</option>
                   {departments.map(d => <option key={d.id} value={d.id}>{d.name} — {d.gl_number}</option>)}
                 </select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Quantity <span className="text-red-500">*</span></label>
-                <input
-                  type="number" min="1" step="1"
-                  max={selectedCoItem?.stock || undefined}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={coForm.quantity} onChange={setco('quantity')} placeholder="0" required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Unit Cost ($) <span className="text-red-500">*</span>
-                  {selectedCoItem?.latest_purchase_price && (
-                    <span className="text-xs text-gray-400 font-normal ml-1">(defaults to last purchase price)</span>
-                  )}
-                </label>
-                <input
-                  type="number" min="0" step="0.01"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={coForm.unit_cost} onChange={setco('unit_cost')} placeholder="0.00" required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Charged By</label>
-                <input
-                  className="w-full border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                  value={coForm.charged_by} readOnly
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={coForm.ticket_number} onChange={setco('ticket_number')} placeholder="e.g. INC-12345" required
-                />
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.ticket_number} onChange={setBH('ticket_number')} placeholder="e.g. INC-12345" required />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
-                <input
-                  type="date"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={coForm.charged_at} onChange={setco('charged_at')} required
-                />
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.charged_at} onChange={setBH('charged_at')} required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  value={coForm.notes} onChange={setco('notes')} placeholder="Optional"
-                />
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={bulkHeader.notes} onChange={setBH('notes')} placeholder="Optional" />
               </div>
             </div>
 
-            {coForm.quantity && coForm.unit_cost && (
-              <div className="bg-brand-50 rounded-lg px-4 py-3 text-sm">
-                <span className="text-brand-700 font-medium">Total charge: {fmt(coForm.quantity * coForm.unit_cost)}</span>
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200">
+              {[['items', 'Items'], ['toner', 'Toner']].map(([val, label]) => (
+                <button key={val} type="button" onClick={() => setBulkTab(val)}
+                  className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                    bulkTab === val ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Items tab */}
+            {bulkTab === 'items' && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Items to charge out</span>
+                  <button type="button" onClick={addItemLine}
+                    className="flex items-center gap-1 text-xs font-medium text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                    <Plus size={12} /> Add Item
+                  </button>
+                </div>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Item</th>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-24">Qty</th>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-28">Unit Cost ($)</th>
+                        <th className="w-10" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {bulkItemLines.map((line, i) => {
+                        const sel = itemsList.find(it => it.id === parseInt(line.item_id));
+                        return (
+                          <tr key={i}>
+                            <td className="px-3 py-2">
+                              <select className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                                value={line.item_id} onChange={e => handleBulkItemSelect(i, e.target.value)}>
+                                <option value="">Select item...</option>
+                                {itemsList.map(it => <option key={it.id} value={it.id} disabled={it.stock <= 0}>{it.name} ({it.stock} avail.)</option>)}
+                              </select>
+                            </td>
+                            <td className="px-3 py-2">
+                              <input type="number" min="1" step="1" max={sel?.stock || undefined}
+                                className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                value={line.quantity} onChange={e => updateItemLine(i, 'quantity', e.target.value)} placeholder="0" />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input type="number" min="0" step="0.01"
+                                className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                value={line.unit_cost} onChange={e => updateItemLine(i, 'unit_cost', e.target.value)} placeholder="0.00" />
+                            </td>
+                            <td className="px-2 py-2 text-center">
+                              {bulkItemLines.length > 1 && (
+                                <button type="button" onClick={() => removeItemLine(i)}
+                                  className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                  <X size={14} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
-            {coError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{coError}</p>}
+            {/* Toner tab */}
+            {bulkTab === 'toner' && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Toner cartridges to charge out</span>
+                  <button type="button" onClick={addTonerLine}
+                    className="flex items-center gap-1 text-xs font-medium text-brand-700 border border-brand-200 bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                    <Plus size={12} /> Add Toner
+                  </button>
+                </div>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Toner Cartridge</th>
+                        <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-24">Qty</th>
+                        <th className="w-10" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {bulkTonerLines.map((line, i) => (
+                        <tr key={i}>
+                          <td className="px-3 py-2">
+                            <select className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                              value={line.toner_id} onChange={e => updateTonerLine(i, 'toner_id', e.target.value)}>
+                              <option value="">Select toner...</option>
+                              {tonerList.map(t => (
+                                <option key={t.id} value={t.id}>
+                                  {t.printer_model} — {SLOT_LABEL[t.slot] || t.slot}{t.part_number ? ` (${t.part_number})` : ''} · {t.stock} in stock
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-3 py-2">
+                            <input type="number" min="1" step="1"
+                              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                              value={line.quantity} onChange={e => updateTonerLine(i, 'quantity', e.target.value)} placeholder="1" />
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            {bulkTonerLines.length > 1 && (
+                              <button type="button" onClick={() => removeTonerLine(i)}
+                                className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                <X size={14} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
+            {bulkError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{bulkError}</p>}
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setShowCoModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                Cancel
+              <button type="button" onClick={() => setShowBulkModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" disabled={bulkSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50">
+                {bulkSubmitting ? 'Saving…' : 'Record Charge-Outs'}
               </button>
-              <button type="submit" disabled={coSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                {coSubmitting ? 'Saving…' : 'Record Charge-Out'}
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Quick Issue Loaner Modal ── */}
+      {showLoanerModal && (
+        <Modal title="Issue Loaner" onClose={() => setShowLoanerModal(false)} size="lg">
+          <form onSubmit={handleLoanerSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Computer <span className="text-red-500">*</span></label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={loanerForm.computer_id} onChange={setlf('computer_id')} required>
+                  <option value="">Select computer...</option>
+                  {availableComputers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                {computers.length > 0 && availableComputers.length === 0 && (
+                  <p className="text-xs text-red-600 mt-1">All computers are currently on loan.</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Department <span className="text-red-500">*</span></label>
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  value={loanerForm.department_id} onChange={setlf('department_id')} required>
+                  <option value="">Select department...</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Person Name <span className="text-red-500">*</span></label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={loanerForm.person_name} onChange={setlf('person_name')} placeholder="Who is borrowing it?" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ticket # <span className="text-red-500">*</span></label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={loanerForm.ticket_number} onChange={setlf('ticket_number')} placeholder="e.g. INC-12345" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Loaned Date <span className="text-red-500">*</span></label>
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={loanerForm.loaned_date} onChange={setlf('loaned_date')} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Due Date <span className="text-red-500">*</span></label>
+                <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  value={loanerForm.due_date} onChange={setlf('due_date')} required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+              <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                value={loanerForm.notes} onChange={setlf('notes')} placeholder="Optional" />
+            </div>
+            {loanerError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{loanerError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setShowLoanerModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" disabled={loanerSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50">
+                {loanerSubmitting ? 'Saving…' : 'Issue Loaner'}
               </button>
             </div>
           </form>
