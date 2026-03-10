@@ -5,4 +5,5 @@ services:
       - "3001:3001"
     volumes:
       - ./data:/app/data
+      - ./.env:/app/.env:ro
     restart: unless-stopped

@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -21,6 +22,8 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/audit-log', require('./routes/auditLog'));
 app.use('/api/loaner-computers', require('./routes/loanerComputers'));
 app.use('/api/loaners', require('./routes/loaners'));
+
+require('./lib/teamsNotify');
 
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../client/dist');
